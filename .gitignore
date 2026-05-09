@@ -1,0 +1,38 @@
+.codex
+.agents/
+
+# Dependencies
+node_modules/
+vendor/
+
+# Build output
+dist/
+build/
+public/build/
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+auth.json
+
+# Logs and caches
+*.log
+.phpunit.result.cache
+.phpunit.cache/
+
+# Local databases and generated storage
+*.sqlite
+*.sqlite3
+*.db
+taleeb-backend/taleeb_db
+taleeb-backend/public/storage
+taleeb-backend/storage/*.key
+taleeb-backend/storage/logs/*.log
+taleeb-backend/storage/app/public/documents/
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
