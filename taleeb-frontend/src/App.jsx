@@ -4,6 +4,8 @@ import Register from "./pages/Register";
 import MyRequests from "./pages/MyRequests";
 import AdminDashboard from "./pages/AdminDashboard";
 import { Toaster } from "react-hot-toast";
+import MySchedule from "./pages/MySchedule";
+import AdminSchedule from "./pages/AdminSchedule";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(
@@ -19,7 +21,7 @@ function App() {
       return (
         <>
           <Toaster position="top-right" />
-          <AdminDashboard />
+          <AdminSchedule />
         </>
       );
     }
@@ -27,7 +29,7 @@ function App() {
     return (
       <>
         <Toaster position="top-right" />
-        <MyRequests />
+        <MySchedule />
       </>
     );
   }
