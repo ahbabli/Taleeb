@@ -250,7 +250,7 @@ return (
         </div>
 
         {/* Controls and Table Card */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-10">
             {/* Table Toolbar */}
             <div className="p-5 border-b border-slate-100 bg-slate-50/30 space-y-4">
                 <div className="flex flex-col md:flex-row gap-4">
@@ -574,7 +574,7 @@ function ActionButton({ onClick, variant, label }) {
 
 function PaginationControls({ pagination, onPageChange }) {
   return (
-    <div className="flex flex-wrap justify-center items-center gap-3 p-6 border-t border-slate-100">
+    <div className="flex flex-wrap justify-center items-center gap-3 p-6 m border-t border-slate-100">
       <button
         disabled={pagination.currentPage === 1}
         onClick={() => onPageChange(pagination.currentPage - 1)}

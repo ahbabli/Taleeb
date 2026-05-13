@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\DocumentRequestController;
 use App\Http\Controllers\Api\DocumentTypeController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ScheduleController;
+use App\Http\Controllers\Api\NotificationController;
 
 Route::get('/document-types', [DocumentTypeController::class, 'index']);
 
@@ -24,4 +25,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/schedule', [ScheduleController::class, 'store']);
     Route::put('/schedule/{schedule}', [ScheduleController::class, 'update']);
     Route::delete('/schedule/{schedule}', [ScheduleController::class, 'destroy']);
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount']);
+    Route::patch('/notifications/{notification}/read', [NotificationController::class, 'markAsRead']);
 });

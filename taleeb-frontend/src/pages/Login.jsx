@@ -3,8 +3,8 @@ import { GraduationCap, Mail, Lock } from "lucide-react";
 import api from "../api/axios";
 
 export default function Login({ onLogin, onGoRegister }) {
-const [email, setEmail] = useState("ahmed@test.com");
-const [password, setPassword] = useState("123456");
+const [email, setEmail] = useState("");
+const [password, setPassword] = useState("");
 const [loading, setLoading] = useState(false);
 const [error, setError] = useState("");
 

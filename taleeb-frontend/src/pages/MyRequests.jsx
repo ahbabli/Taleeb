@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import api from "../api/axios";
+import api, { STORAGE_BASE_URL } from "../api/axios";
 import {
   FileText,
   Clock,
@@ -16,11 +16,8 @@ import {
   ChevronLeft,
   ChevronRight
 } from "lucide-react";
-import axios from "axios";
 import toast from "react-hot-toast";
 
-const API_BASE_URL = "http://127.0.0.1:8000/api";
-const STORAGE_BASE_URL = "http://127.0.0.1:8000/storage";
 const HIDDEN_REQUESTS_KEY = "hiddenDocumentRequestIds";
 
 export default function MyRequests() {
@@ -64,7 +61,7 @@ export default function MyRequests() {
   }, [hiddenRequestIds, page]);
 
   useEffect(() => {
-    axios.get(`${API_BASE_URL}/document-types`)
+    api.get("/document-types")
       .then(res => setDocumentTypes(res.data))
       .catch((err) => {
         console.error(err);
@@ -138,7 +135,7 @@ export default function MyRequests() {
     setError("");
 
     try {
-      await api.delete(`${API_BASE_URL}/document-requests/${id}`);
+      await api.delete(`/document-requests/${id}`);
       setRequests((prev) => prev.filter((req) => req.id !== id));
       toast.success("Request cancelled successfully.");
     } catch (err) {
