@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Helpers\NotificationHelper;
 use App\Models\Schedule;
+use App\Models\Student;
 use Illuminate\Http\Request;
 
 class ScheduleController extends Controller
@@ -62,6 +64,12 @@ class ScheduleController extends Controller
 
         $schedule = Schedule::create($validated);
 
+        $students = Student::where('department', $schedule->department)->where('level', $schedule->level)->get();
+
+        foreach ($students as $student) {
+            NotificationHelper::send($student->id, 'New Schedule Session', 'A new ' . strtoupper($schedule->type) . ' session has been added for ' . $schedule->subject . '.', 'schedule', 'schedule');
+        }
+
         return response()->json(
             [
                 'message' => 'Schedule created successfully.',
@@ -99,6 +107,12 @@ class ScheduleController extends Controller
         }
 
         $schedule->update($validated);
+
+        $students = Student::where('department', $schedule->department)->where('level', $schedule->level)->get();
+
+        foreach ($students as $student) {
+            NotificationHelper::send($student->id, 'Schedule Updated', 'Your schedule has been updated for ' . $schedule->subject . '.', 'schedule', 'schedule');
+        }
 
         return response()->json([
             'message' => 'Schedule updated successfully.',

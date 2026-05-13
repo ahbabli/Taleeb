@@ -25,6 +25,9 @@ export default function StudentHome({ setCurrentPage }) {
 const [requests, setRequests] = useState([]);
 const [schedule, setSchedule] = useState([]);
 const [loading, setLoading] = useState(true);
+const [notifications, setNotifications] = useState([]);
+const [unreadCount, setUnreadCount] = useState(0);
+const [notificationsOpen, setNotificationsOpen] = useState(false);
 
 const student = JSON.parse(localStorage.getItem("student") || "null");
 const user = JSON.parse(localStorage.getItem("user") || "null");
@@ -34,13 +37,22 @@ const today = getTodayName();
 useEffect(() => {
 const fetchData = async () => {
 try {
-const [requestsRes, scheduleRes] = await Promise.all([
-api.get("/document-requests"),
-api.get("/schedule"),
+const [
+  requestsRes,
+  scheduleRes,
+  notificationsRes,
+  unreadRes,
+] = await Promise.all([
+  api.get("/document-requests"),
+  api.get("/schedule"),
+  api.get("/notifications"),
+  api.get("/notifications/unread-count"),
 ]);
 
 setRequests(requestsRes.data.data || requestsRes.data);
 setSchedule(scheduleRes.data);
+setNotifications(notificationsRes.data);
+setUnreadCount(unreadRes.data.count);
 } catch (err) {
 console.error(err);
 } finally {
@@ -100,15 +112,75 @@ if (currentMinutes >= start && currentMinutes <= end) { continue; } if (start> c
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <button
-                        className="relative w-11 h-11 shrink-0 rounded-2xl bg-[#F8FAFF] border border-blue-100 flex items-center justify-center hover:bg-blue-50 transition sm:w-14 sm:h-14">
-                        <Bell className="text-[#1557A6] w-5 h-5 sm:w-6 sm:h-6" />
+                    <div className="relative">
+  <button
+    onClick={() => setNotificationsOpen(!notificationsOpen)}
+    className="relative w-14 h-14 rounded-2xl bg-[#F8FAFF] border border-blue-100 flex items-center justify-center hover:bg-blue-50 transition"
+  >
+    <Bell className="text-[#1557A6]" size={24} />
 
-                        <span
-                            className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold min-w-5 h-5 rounded-full flex items-center justify-center px-1 sm:text-xs sm:min-w-[22px] sm:h-[22px]">
-                            2
-                        </span>
-                    </button>
+    {unreadCount > 0 && (
+      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold min-w-[22px] h-[22px] rounded-full flex items-center justify-center px-1">
+        {unreadCount}
+      </span>
+    )}
+  </button>
+
+  {notificationsOpen && (
+    <div className="absolute right-0 mt-3 w-[340px] bg-white rounded-3xl shadow-2xl border border-blue-100 overflow-hidden z-50">
+      <div className="p-5 border-b border-blue-100">
+        <h2 className="text-xl font-extrabold text-[#0B3D7A]">
+          Notifications
+        </h2>
+
+        <p className="text-slate-500 text-sm mt-1">
+          Latest updates and alerts
+        </p>
+      </div>
+
+      <div className="max-h-[400px] overflow-y-auto">
+        {notifications.length > 0 ? (
+          notifications.map((notification) => (
+            <button
+              key={notification.id}
+              className={`w-full text-left p-4 border-b border-blue-50 hover:bg-blue-50/50 transition ${
+                !notification.is_read ? "bg-blue-50/40" : ""
+              }`}
+            >
+              <div className="flex items-start gap-3">
+                <div
+                  className={`w-3 h-3 rounded-full mt-2 ${
+                    notification.is_read
+                      ? "bg-slate-300"
+                      : "bg-[#1557A6]"
+                  }`}
+                />
+
+                <div className="flex-1">
+                  <h3 className="font-extrabold text-[#102033]">
+                    {notification.title}
+                  </h3>
+
+                  <p className="text-slate-500 text-sm mt-1 leading-relaxed">
+                    {notification.message}
+                  </p>
+
+                  <p className="text-xs text-slate-400 mt-2">
+                    {new Date(notification.created_at).toLocaleString()}
+                  </p>
+                </div>
+              </div>
+            </button>
+          ))
+        ) : (
+          <div className="p-10 text-center text-slate-500">
+            No notifications yet.
+          </div>
+        )}
+      </div>
+    </div>
+  )}
+</div>
                 </div>
             </div>
 

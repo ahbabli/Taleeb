@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\DocumentRequest;
 use Illuminate\Http\Request;
+use App\Helpers\NotificationHelper;
 
 class DocumentRequestController extends Controller
 {
@@ -55,7 +56,12 @@ class DocumentRequestController extends Controller
             'admin_note' => $validated['admin_note'] ?? null,
             'processed_at' => now(),
         ]);
-
+        if ($request->status === 'rejected') {
+            NotificationHelper::send($documentRequest->student_id, 'Request Rejected', 'Your request has been rejected. Reason: ' . $request->admin_note, 'request', 'requests');
+        }
+        if ($request->status === 'ready') {
+            NotificationHelper::send($documentRequest->student_id, 'Document Ready', 'Your document is ready for download.', 'request', 'requests');
+        }
         return response()->json([
             'message' => 'Request status updated successfully',
             'data' => $documentRequest,
@@ -113,6 +119,7 @@ class DocumentRequestController extends Controller
             'admin_note' => 'Your document is ready for download.',
             'processed_at' => now(),
         ]);
+        NotificationHelper::send($documentRequest->student_id, 'Document Uploaded', 'Your requested document has been uploaded and is ready.', 'request', 'requests');
 
         return response()->json([
             'message' => 'Document uploaded successfully',
