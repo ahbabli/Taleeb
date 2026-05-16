@@ -3,38 +3,26 @@ import {
   FileText,
   CalendarDays,
   HelpCircle,
-  Bot,
-  LogOut,
+  Megaphone,
+  CalendarClock
 } from "lucide-react";
-import api from "../api/axios";
 
-export default function Navbar({ currentPage, setCurrentPage, role, onLogout }) {
-  const handleLogout = async () => {
-    try {
-      await api.post("/logout");
-    } catch (e) {
-      console.log("Logout API failed, continuing...");
-    }
-
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    localStorage.removeItem("student");
-
-    onLogout();
-  };
-
+export default function Navbar({ currentPage, setCurrentPage, role }) {
   const studentLinks = [
     { key: "home", label: "Home", icon: Home },
+    { key: "announcements", label: "News", icon: Megaphone },
     { key: "schedule", label: "Schedule", icon: CalendarDays },
     { key: "requests", label: "Requests", icon: FileText },
-    { key: "faq", label: "FAQ", icon: HelpCircle },
-    { key: "assistant", label: "Assistant", icon: Bot },
+    // { key: "faq", label: "FAQ", icon: HelpCircle },
+    // { key: "assistant", label: "Assistant", icon: Bot },
   ];
 
   const adminLinks = [
     { key: "admin-requests", label: "Requests", icon: FileText },
     { key: "admin-schedule", label: "Schedule", icon: CalendarDays },
     { key: "admin-faq", label: "FAQ", icon: HelpCircle },
+    { key: "admin-announcements", label: "News", icon: Megaphone },
+    { key: "admin-academic-settings", label: "Settings", icon: CalendarClock },
   ];
 
   const links = role === "admin" ? adminLinks : studentLinks;
@@ -62,13 +50,13 @@ export default function Navbar({ currentPage, setCurrentPage, role, onLogout }) 
           );
         })}
 
-        <button
+        {/* <button
           onClick={handleLogout}
           className="flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 px-1 py-2 rounded-2xl text-red-500 hover:bg-red-50 transition-all sm:gap-1 sm:px-3"
         >
           <LogOut className="w-[18px] h-[18px] sm:w-5 sm:h-5" />
           <span className="max-w-full truncate text-[9px] font-bold leading-tight sm:text-[11px]">Logout</span>
-        </button>
+        </button> */}
       </div>
     </div>
   );

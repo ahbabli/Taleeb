@@ -10,112 +10,115 @@ import MySchedule from "./pages/MySchedule";
 
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminSchedule from "./pages/AdminSchedule";
+import AdminAnnouncements from "./pages/AdminAnnouncements";
+import StudentAnnouncements from "./pages/StudentAnnouncements";
+import AdminAcademicSettings from "./pages/AdminAcademicSettings";
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(
-    !!localStorage.getItem("token")
-  );
-
-  const [authPage, setAuthPage] = useState("login");
-
-  const user = JSON.parse(localStorage.getItem("user") || "null");
-  const role = user?.role || "student";
-
-  const [currentPage, setCurrentPage] = useState(
-  role === "admin" ? "admin-requests" : "home"
+const [isLoggedIn, setIsLoggedIn] = useState(
+!!localStorage.getItem("token")
 );
 
-  const handleLogout = () => {
-    setIsLoggedIn(false);
-    setAuthPage("login");
-    setCurrentPage("home");
-  };
+const [authPage, setAuthPage] = useState("login");
 
-  const renderPage = () => {
-    if (role === "admin") {
-      switch (currentPage) {
-        case "admin-requests":
-          return <AdminDashboard />;
-        case "admin-schedule":
-          return <AdminSchedule />;
-        case "admin-faq":
-          return <ComingSoon title="FAQ Management" />;
-          case "home":
-  return <StudentHome setCurrentPage={setCurrentPage} />;
-        default:
-          return <AdminDashboard />;
-      }
-    }
+const user = JSON.parse(localStorage.getItem("user") || "null");
+const role = user?.role || "student";
 
-    switch (currentPage) {
-  case "home":
-    return <StudentHome setCurrentPage={setCurrentPage} />;
-  case "requests":
-    return <MyRequests />;
-  case "schedule":
-    return <MySchedule />;
-  case "faq":
-    return <ComingSoon title="FAQ" />;
-  case "assistant":
-    return <ComingSoon title="AI Assistant" />;
-  default:
-    return <StudentHome setCurrentPage={setCurrentPage} />;
+const [currentPage, setCurrentPage] = useState(
+role === "admin" ? "admin-requests" : "home"
+);
+
+const handleLogout = () => {
+setIsLoggedIn(false);
+setAuthPage("login");
+setCurrentPage("home");
+};
+
+const renderPage = () => {
+if (role === "admin") {
+switch (currentPage) {
+case "admin-requests":
+return <AdminDashboard />;
+case "admin-schedule":
+return <AdminSchedule />;
+case "admin-faq":
+return <ComingSoon title="FAQ Management" />;
+case "admin-announcements":
+return <AdminAnnouncements />;
+case "admin-academic-settings":
+return <AdminAcademicSettings />;
+case "home":
+return <StudentHome setCurrentPage={setCurrentPage} />;
+default:
+return <AdminDashboard />;
 }
-  };
+}
 
-  if (!isLoggedIn) {
-    return authPage === "login" ? (
-      <>
-        <Toaster position="top-right" />
-        <Login
-          onLogin={() => {
-            setIsLoggedIn(true);
-            const freshUser = JSON.parse(localStorage.getItem("user") || "null");
-            setCurrentPage(freshUser?.role === "admin" ? "admin-requests" : "home");
-          }}
-          onGoRegister={() => setAuthPage("register")}
+switch (currentPage) {
+case "home":
+return <StudentHome setCurrentPage={setCurrentPage} />;
+
+case "requests":
+return <MyRequests />;
+case "schedule":
+return <MySchedule />;
+case "faq":
+return <ComingSoon title="FAQ" />;
+case "assistant":
+return <ComingSoon title="AI Assistant" />;
+case "announcements":
+return <StudentAnnouncements />;
+default:
+return <StudentHome setCurrentPage={setCurrentPage} />;
+}
+};
+
+if (!isLoggedIn) {
+return authPage === "login" ? (
+<>
+    <Toaster position="top-right" />
+    <Login onLogin={()=> {
+        setIsLoggedIn(true);
+        const freshUser = JSON.parse(localStorage.getItem("user") || "null");
+        setCurrentPage(freshUser?.role === "admin" ? "admin-requests" : "home");
+        }}
+        onGoRegister={() => setAuthPage("register")}
         />
-      </>
-    ) : (
-      <>
-        <Toaster position="top-right" />
-        <Register
-          onRegister={() => setIsLoggedIn(true)}
-          onGoLogin={() => setAuthPage("login")}
+</>
+) : (
+<>
+    <Toaster position="top-right" />
+    <Register onRegister={()=> setIsLoggedIn(true)}
+        onGoLogin={() => setAuthPage("login")}
         />
-      </>
-    );
-  }
+</>
+);
+}
 
-  return (
-    <>
-      <Toaster position="top-right" />
+return (
+<>
+    <Toaster position="top-right" />
 
-      <Navbar
-        currentPage={currentPage}
-        setCurrentPage={setCurrentPage}
-        role={role}
-        onLogout={handleLogout}
-      />
+    <Navbar currentPage={currentPage} setCurrentPage={setCurrentPage} role={role} onLogout={handleLogout} />
 
-      {renderPage()}
-    </>
-  );
+    {renderPage()}
+</>
+);
 }
 
 function ComingSoon({ title }) {
-  return (
-    <div className="min-h-screen bg-[#EAF3FF] flex items-center justify-center px-6">
-      <div className="bg-white rounded-3xl shadow-sm border border-blue-100 p-10 text-center max-w-md">
+return (
+<div className="min-h-screen bg-[#EAF3FF] flex items-center justify-center px-6">
+    <div className="bg-white rounded-3xl shadow-sm border border-blue-100 p-10 text-center max-w-md">
         <h1 className="text-3xl font-extrabold text-[#0B3D7A]">
-          {title}
+            {title}
         </h1>
         <p className="text-slate-500 mt-3">
-          This module will be added next.
+            This module will be added next.
         </p>
-      </div>
     </div>
-  );
+</div>
+);
 }
 
 export default App;

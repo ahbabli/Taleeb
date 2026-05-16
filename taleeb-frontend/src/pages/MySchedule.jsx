@@ -28,19 +28,32 @@ export default function MySchedule() {
 
   const today = getTodayName();
 
-  const fetchSchedule = async () => {
-    try {
-      const res = await api.get("/schedule");
-      setSchedule(res.data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    let isActive = true;
+
+    const fetchSchedule = async () => {
+      try {
+        const res = await api.get("/schedule");
+
+        if (!isActive) {
+          return;
+        }
+
+        setSchedule(res.data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        if (isActive) {
+          setLoading(false);
+        }
+      }
+    };
+
     fetchSchedule();
+
+    return () => {
+      isActive = false;
+    };
   }, []);
 
   const todayCourses = schedule
