@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { GraduationCap, Mail, Lock } from "lucide-react";
+import { Mail, Lock } from "lucide-react";
 import api from "../api/axios";
+import TaleebLogo from "../components/TaleebLogo";
 
 export default function Login({ onLogin, onGoRegister }) {
 const [email, setEmail] = useState("");
@@ -35,12 +36,13 @@ return (
 <div className="min-h-screen bg-[#EAF3FF] flex items-center justify-center px-6">
     <div className="w-full max-w-md bg-white rounded-3xl shadow-xl border border-blue-100 p-8">
         <div className="flex flex-col items-center text-center mb-8">
-            <div className="w-16 h-16 rounded-2xl bg-[#0B3D7A] flex items-center justify-center mb-4">
-                <GraduationCap className="text-white" size={34} />
-            </div>
+            <TaleebLogo
+                className="mb-5"
+                markClassName="h-32 w-auto max-w-[220px]"
+            />
 
             <h1 className="text-3xl font-extrabold text-[#0B3D7A]">
-                Taleeb Portal
+                Welcome Back
             </h1>
 
             <p className="text-slate-500 mt-2">

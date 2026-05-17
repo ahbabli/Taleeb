@@ -12,6 +12,7 @@ import {
   AlertCircle,
   CheckCircle2,
   Layers,
+  MessageSquareText,
   X,
   ChevronLeft,
   ChevronRight
@@ -385,76 +386,82 @@ export default function MyRequests() {
 }
 
 function RequestCard({ req, onCancel, onRemove, onOpenNote, deleting }) {
+  const canRemove = !["pending", "processing", "approved"].includes(req.status);
+
   return (
-    <div className="group bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden transition-all duration-300 hover:-translate-y-1 hover: hover:shadow-sm hover:border-blue-200">
-      <div className="p-5 md:p-7 flex flex-col md:flex-row md:items-center justify-between gap-6">
-        
-        <div className="flex items-center gap-5">
-          <div className={`w-16 h-16 shrink-0 rounded-2xl flex items-center justify-center transition-transform  duration-300 ${getStatusBg(req.status)}`}>
+    <div className="group overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md">
+      <div className="p-5 md:p-7">
+        <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
+          <div className="flex min-w-0 items-start gap-4 sm:gap-5">
+          <div className={`w-14 h-14 shrink-0 rounded-2xl flex items-center justify-center transition-transform duration-300 sm:w-16 sm:h-16 ${getStatusBg(req.status)}`}>
             <FileText className={getStatusColor(req.status)} size={30} />
           </div>
-          <div>
-            <h2 className="text-xl font-bold text-slate-800">
-              {req.document_type?.name || "Document Request"}
-            </h2>
-            <div className="flex flex-wrap items-center gap-y-2 gap-x-4 mt-2">
+
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider border ${getStatusBadge(req.status)}`}>
+                {req.status}
+              </span>
               <span className="flex items-center gap-1.5 text-xs font-bold text-slate-400 uppercase tracking-tight">
                 <Clock size={14} className="text-slate-300" />
                 {req.requested_at ? new Date(req.requested_at).toLocaleDateString() : "Just now"}
               </span>
-              <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider border ${getStatusBadge(req.status)}`}>
-                {req.status}
-              </span>
             </div>
+
+            <h2 className="mt-2 text-xl font-bold leading-tight text-slate-800">
+              {req.document_type?.name || "Document Request"}
+            </h2>
+
+            <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-slate-500">
+              {getStatusNote(req)}
+            </p>
           </div>
         </div>
 
-        <div className="flex flex-col md:items-end gap-4 md:gap-2">
-          <div className="bg-slate-50 md:bg-transparent rounded-xl p-3 md:p-0">
-             <button
-                type="button"
-                onClick={() => onOpenNote(req)}
-                className="text-sm font-bold text-[#1557A6] hover:text-[#0B3D7A] hover:underline transition-colors"
-             >
-                View note
-             </button>
-          </div>
-          
-          <div className="flex items-center gap-3">
-             {req.status === "pending" && (
-             <button
+          <div className="flex flex-wrap items-center gap-2 md:justify-end">
+            <button
+              type="button"
+              onClick={() => onOpenNote(req)}
+              className="inline-flex items-center gap-2 rounded-2xl border border-blue-100 bg-blue-50 px-4 py-2.5 text-sm font-extrabold text-[#1557A6] transition-all hover:border-[#1557A6]/30 hover:bg-blue-100"
+            >
+              <MessageSquareText size={17} />
+              View note
+            </button>
+
+            {req.status === "pending" && (
+              <button
                 type="button" 
                 onClick={() => onCancel(req.id)}
                 disabled={deleting}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl text-red-500 hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-bold text-sm"
-            >
-                {deleting ? <span className="loading loading-spinner loading-xs"></span> : <Trash2 size={18} />}
+                className="inline-flex items-center gap-2 rounded-2xl border border-red-100 bg-red-50 px-4 py-2.5 text-sm font-extrabold text-red-600 transition-all hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {deleting ? <span className="loading loading-spinner loading-xs"></span> : <Trash2 size={17} />}
                 Cancel
-            </button>
-             )}
-            {!["pending", "processing", "approved"].includes(req.status) && (
-            <button
-              type="button"
-              onClick={() => onRemove(req.id)}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-all font-bold text-sm"
-            >
-              <X size={18} />
-              Remove
-            </button>
+              </button>
             )}
+
             {req.file_path && (
-              <>
-              <div className="h-8 w-[1px] bg-slate-100 hidden md:block mx-1"></div>
               <a
                 href={`${STORAGE_BASE_URL}/${req.file_path}`}
                 target="_blank"
                 rel="noreferrer"
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#1557A6] text-white hover:bg-[#0B3D7A] transition-all font-bold text-sm"
+                className="inline-flex items-center gap-2 rounded-2xl bg-[#1557A6] px-4 py-2.5 text-sm font-extrabold text-white transition-all hover:bg-[#0B3D7A]"
               >
-                <Download size={16} />
+                <Download size={17} />
                 Download
               </a>
-              </>
+            )}
+
+            {canRemove && (
+              <button
+                type="button"
+                onClick={() => onRemove(req.id)}
+                className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-extrabold text-slate-500 transition-all hover:border-slate-300 hover:bg-slate-50 hover:text-slate-700"
+                title="Remove from this view"
+              >
+                <X size={17} />
+                Remove
+              </button>
             )}
           </div>
         </div>

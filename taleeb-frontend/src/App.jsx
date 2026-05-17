@@ -4,6 +4,7 @@ import StudentHome from "./pages/StudentHome";
 import Navbar from "./components/Navbar";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import TaleebLogo from "./components/TaleebLogo";
 
 import MyRequests from "./pages/MyRequests";
 import MySchedule from "./pages/MySchedule";
@@ -98,7 +99,6 @@ return authPage === "login" ? (
 return (
 <>
     <Toaster position="top-right" />
-
     <Navbar currentPage={currentPage} setCurrentPage={setCurrentPage} role={role} onLogout={handleLogout} />
 
     {renderPage()}

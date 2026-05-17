@@ -17,6 +17,7 @@ ChevronRight
 } from "lucide-react";
 import api from "../api/axios";
 import toast from "react-hot-toast";
+import TaleebLogo from "../components/TaleebLogo";
 
 export default function AdminDashboard() {
 const [requests, setRequests] = useState([]);
@@ -209,8 +210,8 @@ return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center h-16">
                 <div className="flex items-center gap-3">
-                    <div className="bg-white/10 p-2 rounded-xl backdrop-blur-md">
-                        <FileText className="text-white" size={22} />
+                    <div className="rounded-xl bg-white p-1.5 shadow-sm">
+                        <TaleebLogo markClassName="h-9 w-auto max-w-[86px]" />
                     </div>
                     <div className="hidden sm:block">
                         <h1 className="text-lg font-bold leading-tight">Taleeb Admin</h1>

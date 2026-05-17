@@ -27,6 +27,7 @@ export default function MySchedule() {
   const [loading, setLoading] = useState(true);
 
   const today = getTodayName();
+  const isSunday = today === "Sunday";
 
   useEffect(() => {
     let isActive = true;
@@ -115,10 +116,12 @@ export default function MySchedule() {
               ) : (
                 <div className="p-8 text-center sm:p-10">
                   <h3 className="text-lg font-bold text-[#0B3D7A] sm:text-xl">
-                    No classes today
+                    {isSunday ? "Enjoy your rest 😌" : "No classes today"}
                   </h3>
                   <p className="text-sm text-slate-500 mt-1 sm:text-base">
-                    You have no scheduled cours or TD for today.
+                    {isSunday
+                      ? "It is Sunday. Take a break and recharge for the week ahead."
+                      : "You have no scheduled cours or TD for today."}
                   </p>
                 </div>
               )}

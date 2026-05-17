@@ -81,6 +81,7 @@ const student = JSON.parse(localStorage.getItem("student") || "null");
 const user = JSON.parse(localStorage.getItem("user") || "null");
 
 const today = getTodayName();
+const isSunday = today === "Sunday";
 const handleNotificationClick = useCallback(async (notification) => {
 try {
 await api.patch(`/notifications/${notification.id}/read`);
@@ -401,10 +402,12 @@ academicSettings?.semester_end_date
                             ) : (
                             <div className="p-8 text-center sm:p-10">
                                 <h3 className="font-extrabold text-[#0B3D7A] text-lg sm:text-xl">
-                                    No classes today
+                                    {isSunday ? "Enjoy your rest 😌" : "No classes today"}
                                 </h3>
                                 <p className="text-sm text-slate-500 mt-1 sm:text-base">
-                                    You have no cours or TD today.
+                                    {isSunday
+                                    ? "It is Sunday. Take a break and recharge for the week ahead."
+                                    : "You have no cours or TD today."}
                                 </p>
                             </div>
                             )}
@@ -541,13 +544,13 @@ academicSettings?.semester_end_date
                     </div>
 
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-                        <UsefulLink title="University Website" url="#" />
+                        <UsefulLink title="University Website" url="https://fs.uae.ac.ma/" />
 
-                        <UsefulLink title="E-Learning" url="#" />
+                        <UsefulLink title="E-Learning" target="_blank" url="https://moodle.fst.ac.ma/moodle/" />
 
-                        <UsefulLink title="Student Email" url="#" />
+                        <UsefulLink title="Affichage des notes" url="https://apoweb-te.uae.ac.ma/dossier_etudiant_fs_tetouan/" />
 
-                        <UsefulLink title="Library" url="#" />
+                        <UsefulLink title="Espace Etudiant" url="https://fs.uae.ac.ma/espace-etudiant" />
                     </div>
                 </section>
             </>
@@ -622,7 +625,7 @@ academicSettings?.semester_end_date
 
     function UsefulLink({ title, url }) {
     return (
-    <a href={url}
+    <a target="_blank" href={url}
         className="bg-[#F8FAFF] hover:bg-blue-50 border border-blue-100 rounded-2xl p-3 transition flex items-center justify-between gap-2 sm:p-4">
         <span className="font-bold text-sm leading-tight text-[#102033] sm:text-base">
             {title}
