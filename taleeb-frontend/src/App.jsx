@@ -15,6 +15,26 @@ import AdminAnnouncements from "./pages/AdminAnnouncements";
 import StudentAnnouncements from "./pages/StudentAnnouncements";
 import AdminAcademicSettings from "./pages/AdminAcademicSettings";
 
+const LAST_PAGE_KEY = "taleebCurrentPage";
+
+const studentPages = ["home", "requests", "schedule", "faq", "assistant", "announcements"];
+const adminPages = [
+"admin-requests",
+"admin-schedule",
+"admin-faq",
+"admin-announcements",
+"admin-academic-settings",
+"home",
+];
+
+function getInitialPage(role) {
+const fallback = role === "admin" ? "admin-requests" : "home";
+const storedPage = localStorage.getItem(LAST_PAGE_KEY);
+const allowedPages = role === "admin" ? adminPages : studentPages;
+
+return allowedPages.includes(storedPage) ? storedPage : fallback;
+}
+
 function App() {
 const [isLoggedIn, setIsLoggedIn] = useState(
 !!localStorage.getItem("token")
@@ -26,13 +46,19 @@ const user = JSON.parse(localStorage.getItem("user") || "null");
 const role = user?.role || "student";
 
 const [currentPage, setCurrentPage] = useState(
-role === "admin" ? "admin-requests" : "home"
+() => getInitialPage(role)
 );
+
+const navigateToPage = (page) => {
+localStorage.setItem(LAST_PAGE_KEY, page);
+setCurrentPage(page);
+};
 
 const handleLogout = () => {
 setIsLoggedIn(false);
 setAuthPage("login");
-setCurrentPage("home");
+localStorage.removeItem(LAST_PAGE_KEY);
+navigateToPage("home");
 };
 
 const renderPage = () => {
@@ -49,7 +75,7 @@ return <AdminAnnouncements />;
 case "admin-academic-settings":
 return <AdminAcademicSettings />;
 case "home":
-return <StudentHome setCurrentPage={setCurrentPage} />;
+return <StudentHome setCurrentPage={navigateToPage} />;
 default:
 return <AdminDashboard />;
 }
@@ -57,7 +83,7 @@ return <AdminDashboard />;
 
 switch (currentPage) {
 case "home":
-return <StudentHome setCurrentPage={setCurrentPage} />;
+return <StudentHome setCurrentPage={navigateToPage} />;
 
 case "requests":
 return <MyRequests />;
@@ -81,7 +107,7 @@ return authPage === "login" ? (
     <Login onLogin={()=> {
         setIsLoggedIn(true);
         const freshUser = JSON.parse(localStorage.getItem("user") || "null");
-        setCurrentPage(freshUser?.role === "admin" ? "admin-requests" : "home");
+        navigateToPage(freshUser?.role === "admin" ? "admin-requests" : "home");
         }}
         onGoRegister={() => setAuthPage("register")}
         />
@@ -99,7 +125,7 @@ return authPage === "login" ? (
 return (
 <>
     <Toaster position="top-right" />
-    <Navbar currentPage={currentPage} setCurrentPage={setCurrentPage} role={role} onLogout={handleLogout} />
+    <Navbar currentPage={currentPage} setCurrentPage={navigateToPage} role={role} onLogout={handleLogout} />
 
     {renderPage()}
 </>

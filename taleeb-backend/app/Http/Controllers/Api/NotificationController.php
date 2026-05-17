@@ -46,4 +46,15 @@ class NotificationController extends Controller
             'data' => $notification,
         ]);
     }
+
+    public function clearAll(Request $request)
+    {
+        $student = $request->user()->student;
+
+        Notification::where('student_id', $student->id)->delete();
+
+        return response()->json([
+            'message' => 'Notifications cleared',
+        ]);
+    }
 }

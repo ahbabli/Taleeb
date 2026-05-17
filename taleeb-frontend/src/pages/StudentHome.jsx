@@ -10,6 +10,9 @@ Bell,
 GraduationCap,
 TimerReset,
 ExternalLink,
+Trash2,
+LogOut,
+X,
 } from "lucide-react";
 import api from "../api/axios";
 import toast from "react-hot-toast";
@@ -73,6 +76,7 @@ const [loading, setLoading] = useState(true);
 const [notifications, setNotifications] = useState([]);
 const [unreadCount, setUnreadCount] = useState(0);
 const [notificationsOpen, setNotificationsOpen] = useState(false);
+const [profileOpen, setProfileOpen] = useState(false);
 const [latestNotificationId, setLatestNotificationId] = useState(null);
 const [announcements, setAnnouncements] = useState([]);
 const [academicSettings, setAcademicSettings] = useState(null);
@@ -103,6 +107,34 @@ console.error(err);
 }
 }, [setCurrentPage]);
 
+const clearNotifications = async () => {
+if (notifications.length === 0) return;
+
+try {
+await api.delete("/notifications");
+setNotifications([]);
+setUnreadCount(0);
+setLatestNotificationId(null);
+toast.success("Notifications cleared.");
+} catch (err) {
+console.error(err);
+toast.error("Failed to clear notifications.");
+}
+};
+
+const handleLogout = async () => {
+try {
+await api.post("/logout");
+} catch {
+console.log("Logout failed, continuing...");
+}
+
+localStorage.removeItem("token");
+localStorage.removeItem("user");
+localStorage.removeItem("student");
+window.location.reload();
+};
+
 const showNotificationToast = useCallback((notification) => {
 toast(
 (t) => (
@@ -112,7 +144,7 @@ toast(
     }}
     className="cursor-pointer flex items-start gap-4"
     >
-    <div className="w-12 h-12 rounded-2xl bg-[#EAF3FF] flex items-center justify-center">
+    <div className="w-10 h-10 rounded-2xl bg-[#EAF3FF] flex items-center justify-center">
         <Bell className="text-[#1557A6]" size={22} />
     </div>
 
@@ -284,10 +316,17 @@ academicSettings?.semester_end_date
         <div className="max-w-5xl mx-auto">
             <div className="flex justify-between items-start gap-3 mb-5 sm:mb-8">
                 <div className="flex items-center gap-3 min-w-0 sm:gap-4">
-                    <div
-                        className="w-12 h-12 shrink-0 rounded-full bg-[#EAF3FF] flex items-center justify-center sm:w-16 sm:h-16">
+                    <button
+                        type="button"
+                        onClick={() => {
+                        setProfileOpen(true);
+                        setNotificationsOpen(false);
+                        }}
+                        className="w-12 h-12 shrink-0 rounded-full bg-[#EAF3FF] flex items-center justify-center transition hover:bg-blue-100 hover:ring-4 hover:ring-blue-50 sm:w-16 sm:h-16"
+                        aria-label="Open profile menu"
+                    >
                         <UserRound className="text-[#1557A6] w-6 h-6 sm:w-8 sm:h-8" />
-                    </div>
+                    </button>
 
                     <div className="min-w-0">
                         <h1 className="text-2xl leading-tight font-extrabold text-[#102033] truncate sm:text-3xl">
@@ -303,7 +342,7 @@ academicSettings?.semester_end_date
                 <div className="flex items-center gap-3">
                     <div className="relative">
                         <button onClick={()=> setNotificationsOpen(!notificationsOpen)}
-                            className="relative w-14 h-14 rounded-2xl bg-[#F8FAFF] border border-blue-100 flex items-center justify-center hover:bg-blue-50 transition"
+                            className="relative w-12 h-12 rounded-2xl bg-[#F8FAFF] border border-blue-100 flex items-center justify-center hover:bg-blue-50 transition"
                             >
                             <Bell className="text-[#1557A6]" size={24} />
 
@@ -318,14 +357,26 @@ academicSettings?.semester_end_date
                         {notificationsOpen && (
                         <div
                             className="absolute right-0 mt-3 w-[340px] bg-white rounded-3xl shadow-2xl border border-blue-100 overflow-hidden z-50">
-                            <div className="p-5 border-b border-blue-100">
-                                <h2 className="text-xl font-extrabold text-[#0B3D7A]">
-                                    Notifications
-                                </h2>
+                            <div className="p-5 border-b border-blue-100 flex items-start justify-between gap-3">
+                                <div>
+                                    <h2 className="text-xl font-extrabold text-[#0B3D7A]">
+                                        Notifications
+                                    </h2>
 
-                                <p className="text-slate-500 text-sm mt-1">
-                                    Latest updates and alerts
-                                </p>
+                                    <p className="text-slate-500 text-sm mt-1">
+                                        Latest updates and alerts
+                                    </p>
+                                </div>
+
+                                <button
+                                    type="button"
+                                    onClick={clearNotifications}
+                                    disabled={notifications.length === 0}
+                                    title="Clear all notifications"
+                                    className="w-10 h-10 shrink-0 rounded-2xl bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-100 transition disabled:opacity-40 disabled:cursor-not-allowed"
+                                >
+                                    <Trash2 size={18} />
+                                </button>
                             </div>
 
                             <div className="max-h-[400px] overflow-y-auto">
@@ -367,6 +418,105 @@ academicSettings?.semester_end_date
                         )}
                     </div>
                 </div>
+            </div>
+
+            <div className={`fixed inset-0 z-[60] transition ${
+                profileOpen ? "pointer-events-auto" : "pointer-events-none"
+            }`}>
+                <button
+                    type="button"
+                    className={`absolute inset-0 bg-slate-950/40 backdrop-blur-sm transition-opacity duration-500 ease-out ${
+                        profileOpen ? "opacity-100" : "opacity-0"
+                    }`}
+                    onClick={() => setProfileOpen(false)}
+                    aria-label="Close profile menu"
+                />
+
+                <aside className={`absolute left-0 top-0 h-full w-full max-w-sm bg-white shadow-[24px_0_60px_rgba(15,23,42,0.18)] border-r border-blue-100 flex flex-col transform-gpu transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+                    profileOpen
+                    ? "translate-x-0 opacity-100 scale-100"
+                    : "-translate-x-full opacity-0 scale-[0.98]"
+                }`}>
+                    <div className={`bg-[#0B3D7A] p-6 text-white transition-all duration-700 ease-out ${
+                        profileOpen ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0"
+                    }`}>
+                        <div className="flex items-start justify-between gap-4">
+                            <div className="flex items-center gap-3 min-w-0">
+                                <div className="w-14 h-14 shrink-0 rounded-full bg-white/15 flex items-center justify-center">
+                                    <UserRound className="w-7 h-7" />
+                                </div>
+
+                                <div className="min-w-0">
+                                    <h2 className="text-xl font-extrabold truncate">
+                                        {user?.name || "Student"}
+                                    </h2>
+                                    <p className="text-sm text-blue-100 truncate">
+                                        {user?.email || "Student account"}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <button
+                                type="button"
+                                onClick={() => setProfileOpen(false)}
+                                className="w-10 h-10 shrink-0 rounded-2xl bg-white/10 flex items-center justify-center hover:bg-white/20 transition"
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        <div className="mt-6 rounded-3xl bg-white/10 p-4">
+                            <p className="text-xs font-extrabold uppercase tracking-wide text-blue-100">
+                                Account
+                            </p>
+                            <p className="mt-1 text-sm leading-relaxed text-blue-50">
+                                Your Taleeb profile and academic identity.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className={`flex-1 overflow-y-auto p-5 transition-all duration-700 ease-out ${
+                        profileOpen ? "translate-y-0 opacity-100 delay-75" : "translate-y-4 opacity-0 delay-0"
+                    }`}>
+                        <div className="mb-4">
+                            <h3 className="text-lg font-extrabold text-[#0B3D7A]">
+                                Profile Information
+                            </h3>
+                            <p className="text-sm text-slate-500">
+                                Details connected to your student account.
+                            </p>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3 mb-5">
+                            <ProfileInfoCard label="Department" value={student?.department || "—"} />
+                            <ProfileInfoCard label="Level" value={student?.level || "—"} />
+                            <ProfileInfoCard label="Academic Year" value={student?.academic_year || "—"} />
+                            <ProfileInfoCard label="Student Code" value={student?.student_code || "—"} />
+                        </div>
+
+                        <div className="rounded-3xl border border-blue-100 bg-[#F8FAFF] p-4">
+                            <p className="text-xs font-extrabold uppercase tracking-wide text-slate-400">
+                                Email
+                            </p>
+                            <p className="mt-1 break-words text-sm font-extrabold text-[#102033]">
+                                {user?.email || "—"}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className={`border-t border-blue-100 p-5 transition-all duration-700 ease-out ${
+                        profileOpen ? "translate-y-0 opacity-100 delay-100" : "translate-y-4 opacity-0 delay-0"
+                    }`}>
+                        <button
+                            type="button"
+                            onClick={handleLogout}
+                            className="w-full flex items-center justify-center gap-2 rounded-2xl bg-red-50 px-4 py-3 font-extrabold text-red-600 transition hover:bg-red-100"
+                        >
+                            <LogOut size={20} />
+                            Logout
+                        </button>
+                    </div>
+                </aside>
             </div>
 
             {loading ? (
@@ -633,5 +783,18 @@ academicSettings?.semester_end_date
 
         <ExternalLink className="text-[#1557A6] w-4 h-4 shrink-0 sm:w-[18px] sm:h-[18px]" />
     </a>
+    );
+    }
+
+    function ProfileInfoCard({ label, value }) {
+    return (
+    <div className="rounded-2xl bg-[#F8FAFF] border border-blue-100 p-3">
+        <p className="text-[11px] font-extrabold uppercase tracking-wide text-slate-400">
+            {label}
+        </p>
+        <p className="mt-1 text-sm font-extrabold text-[#102033] truncate">
+            {value}
+        </p>
+    </div>
     );
     }

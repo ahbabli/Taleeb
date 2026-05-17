@@ -8,7 +8,6 @@ import {
   Inbox,
   Trash2,
   Download,
-  LogOut,
   AlertCircle,
   CheckCircle2,
   Layers,
@@ -158,17 +157,7 @@ export default function MyRequests() {
     toast.success("Request removed from this view.");
   };
 
-  const handleLogout = async () => {
-    try {
-      await api.post("/logout");
-    } catch {
-      console.log("Logout API failed, continue anyway");
-    }
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    localStorage.removeItem("student");
-    window.location.reload();
-  };
+  
 
   return (
     <div className="min-h-screen bg-[#F4F7FA] font-sans antialiased pb-20">
@@ -192,14 +181,7 @@ export default function MyRequests() {
               New Request
             </button>
 
-            <button
-              onClick={handleLogout}
-              className="group flex items-center justify-center w-12 h-12 md:w-auto md:h-auto md:px-5 md:py-3 bg-red-500/10 text-red-100 hover:bg-red-500 hover:text-white rounded-2xl font-bold border border-red-400/30 transition-all"
-              title="Logout"
-            >
-              <LogOut size={20} className="md:mr-2" />
-              <span className="hidden md:inline">Logout</span>
-            </button>
+            
           </div>
         </div>
       </header>

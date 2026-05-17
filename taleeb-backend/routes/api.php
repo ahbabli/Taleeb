@@ -28,6 +28,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/schedule/{schedule}', [ScheduleController::class, 'update']);
     Route::delete('/schedule/{schedule}', [ScheduleController::class, 'destroy']);
     Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::delete('/notifications', [NotificationController::class, 'clearAll']);
     Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount']);
     Route::patch('/notifications/{notification}/read', [NotificationController::class, 'markAsRead']);
     Route::get('/announcements', [AnnouncementController::class, 'index']);
