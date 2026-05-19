@@ -14,6 +14,8 @@ import AdminSchedule from "./pages/AdminSchedule";
 import AdminAnnouncements from "./pages/AdminAnnouncements";
 import StudentAnnouncements from "./pages/StudentAnnouncements";
 import AdminAcademicSettings from "./pages/AdminAcademicSettings";
+import AdminFAQ from "./pages/AdminFAQ";
+import StudentFAQ from "./pages/StudentFAQ";
 
 const LAST_PAGE_KEY = "taleebCurrentPage";
 
@@ -68,10 +70,10 @@ case "admin-requests":
 return <AdminDashboard />;
 case "admin-schedule":
 return <AdminSchedule />;
-case "admin-faq":
-return <ComingSoon title="FAQ Management" />;
 case "admin-announcements":
 return <AdminAnnouncements />;
+case "admin-faq":
+return <AdminFAQ />;
 case "admin-academic-settings":
 return <AdminAcademicSettings />;
 case "home":
@@ -90,7 +92,7 @@ return <MyRequests />;
 case "schedule":
 return <MySchedule />;
 case "faq":
-return <ComingSoon title="FAQ" />;
+return <StudentFAQ />;
 case "assistant":
 return <ComingSoon title="AI Assistant" />;
 case "announcements":

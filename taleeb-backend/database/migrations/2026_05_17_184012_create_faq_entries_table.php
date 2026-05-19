@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -13,6 +12,17 @@ return new class extends Migration
     {
         Schema::create('faq_entries', function (Blueprint $table) {
             $table->id();
+
+            $table->string('question');
+
+            $table->text('answer');
+
+            // category لتنظيم الأسئلة
+            $table->string('category')->nullable();
+
+            // إظهار/إخفاء
+            $table->boolean('is_published')->default(true);
+
             $table->timestamps();
         });
     }

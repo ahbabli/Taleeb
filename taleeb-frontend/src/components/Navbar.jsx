@@ -4,7 +4,7 @@ import {
   CalendarDays,
   HelpCircle,
   Megaphone,
-  CalendarClock
+  CalendarClock,
 } from "lucide-react";
 
 export default function Navbar({ currentPage, setCurrentPage, role }) {
@@ -20,8 +20,8 @@ export default function Navbar({ currentPage, setCurrentPage, role }) {
   const adminLinks = [
     { key: "admin-requests", label: "Requests", icon: FileText },
     { key: "admin-schedule", label: "Schedule", icon: CalendarDays },
-    { key: "admin-faq", label: "FAQ", icon: HelpCircle },
     { key: "admin-announcements", label: "News", icon: Megaphone },
+    { key: "admin-faq", label: "FAQ", icon: HelpCircle },
     { key: "admin-academic-settings", label: "Settings", icon: CalendarClock },
   ];
 
@@ -49,14 +49,6 @@ export default function Navbar({ currentPage, setCurrentPage, role }) {
             </button>
           );
         })}
-
-        {/* <button
-          onClick={handleLogout}
-          className="flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 px-1 py-2 rounded-2xl text-red-500 hover:bg-red-50 transition-all sm:gap-1 sm:px-3"
-        >
-          <LogOut className="w-[18px] h-[18px] sm:w-5 sm:h-5" />
-          <span className="max-w-full truncate text-[9px] font-bold leading-tight sm:text-[11px]">Logout</span>
-        </button> */}
       </div>
     </div>
   );

@@ -8,6 +8,8 @@ use App\Http\Controllers\Api\ScheduleController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\AnnouncementController;
 use App\Http\Controllers\Api\AcademicSettingController;
+use App\Http\Controllers\Api\FaqController;
+use App\Http\Controllers\Api\AssistantController;
 
 Route::get('/document-types', [DocumentTypeController::class, 'index']);
 
@@ -38,4 +40,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/announcements/{announcement}', [AnnouncementController::class, 'update']);
     Route::get('/academic-settings', [AcademicSettingController::class, 'show']);
     Route::put('/academic-settings', [AcademicSettingController::class, 'update']);
+    Route::get('/faq', [FaqController::class, 'index']);
+    Route::post('/faq', [FaqController::class, 'store']);
+    Route::put('/faq/{faqEntry}', [FaqController::class, 'update']);
+    Route::delete('/faq/{faqEntry}', [FaqController::class, 'destroy']);
+    Route::post('/assistant/ask', [AssistantController::class, 'ask']);
 });

@@ -7,12 +7,18 @@ ClipboardList,
 ArrowRight,
 UserRound,
 Bell,
+HelpCircle,
 GraduationCap,
 TimerReset,
 ExternalLink,
 Trash2,
 LogOut,
 X,
+Mail,
+IdCard,
+Building2,
+Layers,
+CalendarRange,
 } from "lucide-react";
 import api from "../api/axios";
 import toast from "react-hot-toast";
@@ -437,21 +443,30 @@ academicSettings?.semester_end_date
                     ? "translate-x-0 opacity-100 scale-100"
                     : "-translate-x-full opacity-0 scale-[0.98]"
                 }`}>
-                    <div className={`bg-[#0B3D7A] p-6 text-white transition-all duration-700 ease-out ${
+                    <div className={`relative overflow-hidden bg-[#1557A6] p-6 text-white transition-all duration-700 ease-out ${
                         profileOpen ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0"
                     }`}>
+                        <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent" />
+
                         <div className="flex items-start justify-between gap-4">
-                            <div className="flex items-center gap-3 min-w-0">
-                                <div className="w-14 h-14 shrink-0 rounded-full bg-white/15 flex items-center justify-center">
-                                    <UserRound className="w-7 h-7" />
+                            <div className="relative flex items-center gap-3 min-w-0">
+                                <div className="w-16 h-16 shrink-0 rounded-2xl bg-white/12 ring-1 ring-white/20 flex items-center justify-center">
+                                    <img
+                                        src="/taleeb-logo%20white.png"
+                                        alt="Taleeb"
+                                        className="h-11 w-auto object-contain"
+                                    />
                                 </div>
 
                                 <div className="min-w-0">
-                                    <h2 className="text-xl font-extrabold truncate">
+                                    <p className="text-xs font-extrabold uppercase tracking-wide text-blue-100">
+                                        Taleeb Profile
+                                    </p>
+                                    <h2 className="mt-1 text-xl font-extrabold truncate">
                                         {user?.name || "Student"}
                                     </h2>
                                     <p className="text-sm text-blue-100 truncate">
-                                        {user?.email || "Student account"}
+                                        {student?.student_code || "Student account"}
                                     </p>
                                 </div>
                             </div>
@@ -459,48 +474,66 @@ academicSettings?.semester_end_date
                             <button
                                 type="button"
                                 onClick={() => setProfileOpen(false)}
-                                className="w-10 h-10 shrink-0 rounded-2xl bg-white/10 flex items-center justify-center hover:bg-white/20 transition"
+                                className="relative w-10 h-10 shrink-0 rounded-2xl bg-white/10 flex items-center justify-center hover:bg-white/20 transition"
                             >
                                 <X size={20} />
                             </button>
                         </div>
 
-                        <div className="mt-6 rounded-3xl bg-white/10 p-4">
-                            <p className="text-xs font-extrabold uppercase tracking-wide text-blue-100">
-                                Account
-                            </p>
-                            <p className="mt-1 text-sm leading-relaxed text-blue-50">
-                                Your Taleeb profile and academic identity.
-                            </p>
+                        <div className="relative mt-6 rounded-2xl bg-white/12 p-4 ring-1 ring-white/15">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center">
+                                    <GraduationCap className="w-5 h-5" />
+                                </div>
+                                <div className="min-w-0">
+                                    <p className="text-xs font-extrabold uppercase tracking-wide text-blue-100">
+                                        Academic Identity
+                                    </p>
+                                    <p className="mt-1 truncate text-sm font-bold text-white">
+                                        {student?.department || "Department"} · {student?.level || "Level"}
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
                     <div className={`flex-1 overflow-y-auto p-5 transition-all duration-700 ease-out ${
                         profileOpen ? "translate-y-0 opacity-100 delay-75" : "translate-y-4 opacity-0 delay-0"
                     }`}>
-                        <div className="mb-4">
-                            <h3 className="text-lg font-extrabold text-[#0B3D7A]">
-                                Profile Information
-                            </h3>
-                            <p className="text-sm text-slate-500">
-                                Details connected to your student account.
-                            </p>
-                        </div>
+                        <div className="space-y-3">
+                            <ProfileInfoCard icon={IdCard} label="Student Code" value={student?.student_code || "—"} />
+                            <ProfileInfoCard icon={Building2} label="Department" value={student?.department || "—"} />
+                            <div className="grid grid-cols-2 gap-3">
+                                <ProfileInfoCard icon={Layers} label="Level" value={student?.level || "—"} />
+                                <ProfileInfoCard icon={CalendarRange} label="Academic Year" value={student?.academic_year || "—"} />
+                            </div>
+                            <ProfileInfoCard icon={Mail} label="Email" value={user?.email || "—"} allowWrap />
 
-                        <div className="grid grid-cols-2 gap-3 mb-5">
-                            <ProfileInfoCard label="Department" value={student?.department || "—"} />
-                            <ProfileInfoCard label="Level" value={student?.level || "—"} />
-                            <ProfileInfoCard label="Academic Year" value={student?.academic_year || "—"} />
-                            <ProfileInfoCard label="Student Code" value={student?.student_code || "—"} />
-                        </div>
-
-                        <div className="rounded-3xl border border-blue-100 bg-[#F8FAFF] p-4">
-                            <p className="text-xs font-extrabold uppercase tracking-wide text-slate-400">
-                                Email
-                            </p>
-                            <p className="mt-1 break-words text-sm font-extrabold text-[#102033]">
-                                {user?.email || "—"}
-                            </p>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setProfileOpen(false);
+                                    setCurrentPage("faq");
+                                }}
+                                className="group w-full rounded-2xl border border-blue-100 bg-white p-3 text-left transition-all duration-300 hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-lg hover:shadow-blue-100/60"
+                            >
+                                <div className="flex items-center justify-between gap-3">
+                                    <div className="flex min-w-0 items-center gap-3">
+                                        <div className="w-10 h-10 shrink-0 rounded-xl bg-[#EAF3FF] text-[#1557A6] flex items-center justify-center transition group-hover:bg-[#1557A6] group-hover:text-white">
+                                            <HelpCircle className="w-5 h-5" />
+                                        </div>
+                                        <div className="min-w-0">
+                                            <p className="text-sm font-extrabold text-[#102033]">
+                                                FAQ
+                                            </p>
+                                            <p className="text-xs font-semibold text-slate-500 truncate">
+                                                Find quick student answers
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <ArrowRight className="w-5 h-5 shrink-0 text-[#1557A6] transition group-hover:translate-x-1" />
+                                </div>
+                            </button>
                         </div>
                     </div>
 
@@ -786,15 +819,22 @@ academicSettings?.semester_end_date
     );
     }
 
-    function ProfileInfoCard({ label, value }) {
+    function ProfileInfoCard({ icon: Icon, label, value, allowWrap = false }) {
     return (
-    <div className="rounded-2xl bg-[#F8FAFF] border border-blue-100 p-3">
-        <p className="text-[11px] font-extrabold uppercase tracking-wide text-slate-400">
-            {label}
-        </p>
-        <p className="mt-1 text-sm font-extrabold text-[#102033] truncate">
-            {value}
-        </p>
+    <div className="group rounded-2xl bg-[#F8FAFF] border border-blue-100 p-3 transition-all duration-300 hover:-translate-y-0.5 hover:border-blue-200 hover:bg-white hover:shadow-lg hover:shadow-blue-100/60">
+        <div className="flex items-center gap-3">
+            <div className="w-10 h-10 shrink-0 rounded-xl bg-white text-[#1557A6] border border-blue-100 flex items-center justify-center transition group-hover:bg-[#1557A6] group-hover:text-white">
+                <Icon className="w-5 h-5" />
+            </div>
+            <div className="min-w-0">
+                <p className="text-[10px] font-extrabold uppercase tracking-wide text-slate-400">
+                    {label}
+                </p>
+                <p className={`mt-0.5 text-sm font-extrabold text-[#102033] ${allowWrap ? "break-words" : "truncate"}`}>
+                    {value}
+                </p>
+            </div>
+        </div>
     </div>
     );
     }
