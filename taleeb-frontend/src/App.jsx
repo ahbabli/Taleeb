@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { Toaster } from "react-hot-toast";
+import { Bot } from "lucide-react";
 import StudentHome from "./pages/StudentHome";
 import Navbar from "./components/Navbar";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import TaleebLogo from "./components/TaleebLogo";
 
 import MyRequests from "./pages/MyRequests";
 import MySchedule from "./pages/MySchedule";
@@ -16,7 +16,7 @@ import StudentAnnouncements from "./pages/StudentAnnouncements";
 import AdminAcademicSettings from "./pages/AdminAcademicSettings";
 import AdminFAQ from "./pages/AdminFAQ";
 import StudentFAQ from "./pages/StudentFAQ";
-
+import AssistantChat from "./pages/AssistantChat";
 const LAST_PAGE_KEY = "taleebCurrentPage";
 
 const studentPages = ["home", "requests", "schedule", "faq", "assistant", "announcements"];
@@ -26,6 +26,7 @@ const adminPages = [
 "admin-faq",
 "admin-announcements",
 "admin-academic-settings",
+"assistant",
 "home",
 ];
 
@@ -76,6 +77,8 @@ case "admin-faq":
 return <AdminFAQ />;
 case "admin-academic-settings":
 return <AdminAcademicSettings />;
+case "assistant":
+return <AssistantChat title="AI Assistant" />;
 case "home":
 return <StudentHome setCurrentPage={navigateToPage} />;
 default:
@@ -94,7 +97,7 @@ return <MySchedule />;
 case "faq":
 return <StudentFAQ />;
 case "assistant":
-return <ComingSoon title="AI Assistant" />;
+return <AssistantChat title="AI Assistant" />;
 case "announcements":
 return <StudentAnnouncements />;
 default:
@@ -128,25 +131,21 @@ return (
 <>
     <Toaster position="top-right" />
     <Navbar currentPage={currentPage} setCurrentPage={navigateToPage} role={role} onLogout={handleLogout} />
+    {currentPage !== "assistant" && (
+        <button
+            type="button"
+            onClick={() => navigateToPage("assistant")}
+            aria-label="Open AI Assistant"
+            className="fixed bottom-24 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#1557A6] text-white shadow-2xl shadow-blue-900/25 ring-1 ring-white/70 transition hover:bg-[#0B3D7A] focus:outline-none focus:ring-4 focus:ring-blue-100 sm:bottom-28 sm:right-6"
+        >
+            <Bot size={24} />
+        </button>
+    )}
 
     {renderPage()}
 </>
 );
 }
 
-function ComingSoon({ title }) {
-return (
-<div className="min-h-screen bg-[#EAF3FF] flex items-center justify-center px-6">
-    <div className="bg-white rounded-3xl shadow-sm border border-blue-100 p-10 text-center max-w-md">
-        <h1 className="text-3xl font-extrabold text-[#0B3D7A]">
-            {title}
-        </h1>
-        <p className="text-slate-500 mt-3">
-            This module will be added next.
-        </p>
-    </div>
-</div>
-);
-}
 
 export default App;

@@ -13,8 +13,6 @@ export default function Navbar({ currentPage, setCurrentPage, role }) {
     { key: "announcements", label: "News", icon: Megaphone },
     { key: "schedule", label: "Schedule", icon: CalendarDays },
     { key: "requests", label: "Requests", icon: FileText },
-    // { key: "faq", label: "FAQ", icon: HelpCircle },
-    // { key: "assistant", label: "Assistant", icon: Bot },
   ];
 
   const adminLinks = [

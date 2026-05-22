@@ -19,7 +19,7 @@ class AssistantController extends Controller
 
         $faqMatch = $this->bestFaqMatch($question);
 
-        if ($faqMatch && $faqMatch['score'] >= 2) {
+        if ($faqMatch && $faqMatch['score'] >= 1) {
             return response()->json([
                 'source' => 'faq',
                 'score' => $faqMatch['score'],
@@ -29,7 +29,7 @@ class AssistantController extends Controller
 
         $announcementMatch = $this->bestAnnouncementMatch($question);
 
-        if ($announcementMatch && $announcementMatch['score'] >= 2) {
+        if ($announcementMatch && $announcementMatch['score'] >= 1) {
             $announcement = $announcementMatch['announcement'];
 
             return response()->json([
@@ -103,25 +103,61 @@ class AssistantController extends Controller
     }
 
     private function extractKeywords(string $text): array
-    {
-        $text = strtolower($text);
-        $text = preg_replace('/[^a-z0-9\s]/', ' ', $text);
+{
+    $text = strtolower($text);
+    $text = preg_replace('/[^a-z0-9\s]/', ' ', $text);
 
-        $words = preg_split('/\s+/', $text);
+    $words = preg_split('/\s+/', $text);
 
-        $ignoredWords = [
-            'how', 'can', 'could', 'would', 'should',
-            'i', 'you', 'we', 'they',
-            'the', 'a', 'an',
-            'is', 'are', 'was', 'were', 'be',
-            'to', 'of', 'and', 'or', 'in', 'on', 'for', 'with',
-            'what', 'where', 'when', 'why', 'do', 'does',
-            'my', 'your', 'me', 'it', 'this', 'that',
-            'platform', 'student', 'service', 'services'
-        ];
+    $ignoredWords = [
+        'how', 'can', 'could', 'would', 'should',
+        'i', 'you', 'we', 'they',
+        'the', 'a', 'an',
+        'is', 'are', 'was', 'were', 'be',
+        'to', 'of', 'and', 'or', 'in', 'on', 'for', 'with',
+        'what', 'where', 'when', 'why', 'do', 'does',
+        'my', 'your', 'me', 'it', 'this', 'that',
+        'platform', 'student', 'service', 'services'
+    ];
 
-        return array_values(array_unique(array_filter($words, function ($word) use ($ignoredWords) {
-            return strlen($word) >= 4 && !in_array($word, $ignoredWords);
-        })));
+    $keywords = array_values(array_unique(array_filter($words, function ($word) use ($ignoredWords) {
+        return strlen($word) >= 3 && !in_array($word, $ignoredWords);
+    })));
+
+    return $this->expandSynonyms($keywords);
+}
+
+private function expandSynonyms(array $keywords): array
+{
+    $synonyms = [
+        'transcript' => ['transcript', 'grades', 'marks', 'record', 'notes'],
+        'grades' => ['transcript', 'grades', 'marks', 'record', 'notes'],
+        'marks' => ['transcript', 'grades', 'marks', 'record', 'notes'],
+        'certificate' => ['certificate', 'document', 'attestation'],
+        'document' => ['document', 'certificate', 'attestation'],
+        'request' => ['request', 'ask', 'apply', 'submit'],
+        'schedule' => ['schedule', 'timetable', 'class', 'session'],
+        'timetable' => ['schedule', 'timetable', 'class', 'session'],
+        'exam' => ['exam', 'exams', 'test', 'timetable'],
+        'exams' => ['exam', 'exams', 'test', 'timetable'],
+        'notification' => ['notification', 'alert', 'message'],
+        'announcement' => ['announcement', 'news', 'notice'],
+        'login' => ['login', 'signin', 'account'],
+        'password' => ['password', 'credentials', 'account'],
+        'td' => ['td', 'tutorial', 'practical'],
+        'cours' => ['cours', 'course', 'lecture'],
+    ];
+
+    $expanded = [];
+
+    foreach ($keywords as $keyword) {
+        if (isset($synonyms[$keyword])) {
+            $expanded = array_merge($expanded, $synonyms[$keyword]);
+        } else {
+            $expanded[] = $keyword;
+        }
     }
+
+    return array_values(array_unique($expanded));
+}
 }

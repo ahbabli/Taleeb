@@ -1,0 +1,125 @@
+Q: What is Taleeb platform?
+A: Taleeb is a digital student platform designed to simplify academic and administrative services such as document requests, schedules, announcements, notifications, and student support.
+
+Q: What services does the platform provide?
+A: The platform provides document requests, class schedules, announcements, notifications, FAQ support, and other student services.
+
+Q: Who can use the platform?
+A: The platform is intended for university students and administration staff.
+
+Q: Can I access the platform from my phone?
+A: Yes. The platform is designed to work on both mobile phones and computers.
+
+Q: Is the platform available outside the university network?
+A: Yes. Students can access the platform from anywhere with an internet connection.
+
+Q: How do I log in to the platform?
+A: You can log in using your university credentials provided by the administration.
+
+Q: Can I use my university email account?
+A: Yes. The platform supports university student accounts.
+
+Q: What should I do if I cannot log in?
+A: First, verify your email and password. If the problem continues, contact the administration.
+
+Q: Who should I contact if I forget my password?
+A: You should contact the administration or technical support.
+
+Q: How can I request an administrative document?
+A: Go to the Requests page, choose the document type, and submit your request.
+
+Q: Which documents are available on the platform?
+A: Available documents depend on the administration, such as transcripts, enrollment certificates, and internship documents.
+
+Q: How can I know if my document is ready?
+A: You will receive a notification when the document status changes.
+
+Q: Will I receive a notification when my request status changes?
+A: Yes. Notifications are sent automatically when the request is updated.
+
+Q: Can I cancel a request after submitting it?
+A: Yes, depending on the current processing status of the request.
+
+Q: What does “Pending” status mean?
+A: It means your request has been received and is waiting for processing.
+
+Q: What does “Rejected” status mean?
+A: It means the administration rejected the request, usually with a reason attached.
+
+Q: Can I download my document directly from the platform?
+A: Yes, if the administration uploads the final document to the platform.
+
+Q: How can I view today’s schedule?
+A: The home page automatically displays today’s sessions and upcoming classes.
+
+Q: What do “Cours” and “TD” mean?
+A: “Cours” refers to lecture sessions, while “TD” refers to tutorial or practical sessions.
+
+Q: Why are only a few sessions displayed on the home page?
+A: The platform displays only the most relevant upcoming sessions to improve readability.
+
+Q: How can I identify the current class?
+A: The current session is marked with a “LIVE NOW” label.
+
+Q: What does the “LIVE NOW” label mean?
+A: It means the session is currently in progress.
+
+Q: What does the “NEXT” label mean?
+A: It indicates the next upcoming session.
+
+Q: Will I be notified when the schedule changes?
+A: Yes. Students receive notifications when important schedule changes occur.
+
+Q: What types of notifications can I receive?
+A: Notifications may include request updates, announcements, schedule changes, and important university information.
+
+Q: Can I open pages directly from notifications?
+A: Yes. Clicking a notification redirects you to the related page.
+
+Q: Why did I not receive a notification?
+A: Notifications may not appear if there is no recent update or if your session is disconnected.
+
+Q: How long do popup notifications stay visible?
+A: Popup notifications remain visible for a few seconds and can also be closed manually.
+
+Q: Where can I find university announcements?
+A: Announcements are available in the News section and on the home page.
+
+Q: Can announcements include PDF files or images?
+A: Yes. Announcements can include PDF files and images attached by the administration.
+
+Q: How can I download an attachment from an announcement?
+A: Open the announcement and click the attachment download button.
+
+Q: Will important announcements appear in notifications?
+A: Yes. Important announcements automatically generate notifications.
+
+Q: How can I know how many days remain before exams?
+A: The home page includes a dynamic exam countdown card.
+
+Q: Where can I find the exam timetable?
+A: The exam timetable is published in the announcements section.
+
+Q: Can I download the exam schedule as PDF?
+A: Yes, if the administration uploads the exam timetable file.
+
+Q: How can I search for answers quickly?
+A: Use the FAQ search bar to find questions and answers instantly.
+
+Q: Can I search questions by category?
+A: Yes. FAQ entries can be filtered by category.
+
+Q: What should I do if I cannot find my answer in the FAQ?
+A: You can contact the administration or use the assistant for additional help.
+
+Q: What can the AI assistant help me with?
+A: The assistant can answer common student questions and guide users through platform services.
+
+Q: Can the assistant answer questions about schedules and requests?
+A: Yes. The assistant is designed to help students understand schedules, requests, and platform features.
+
+Q: Can the assistant guide me through administrative procedures?
+A: Yes. The assistant can explain common administrative procedures step by step.
+
+Q: Will the assistant learn from university announcements and FAQ entries?
+A: Yes. The assistant can use FAQ entries and announcements as knowledge sources.
