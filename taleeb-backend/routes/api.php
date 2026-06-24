@@ -10,6 +10,9 @@ use App\Http\Controllers\Api\AnnouncementController;
 use App\Http\Controllers\Api\AcademicSettingController;
 use App\Http\Controllers\Api\FaqController;
 use App\Http\Controllers\Api\AssistantController;
+use App\Http\Controllers\Api\ClassPostController;
+use App\Http\Controllers\Api\UserManagementController;
+use App\Http\Controllers\Api\AdminAnalyticsController;
 
 Route::get('/document-types', [DocumentTypeController::class, 'index']);
 
@@ -45,4 +48,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/faq/{faqEntry}', [FaqController::class, 'update']);
     Route::delete('/faq/{faqEntry}', [FaqController::class, 'destroy']);
     Route::post('/assistant/ask', [AssistantController::class, 'ask']);
+    Route::get('/class-posts', [ClassPostController::class, 'index']);
+    Route::post('/class-posts', [ClassPostController::class, 'store']);
+    Route::get('/class-posts/{classPost}/attachment', [ClassPostController::class, 'downloadAttachment']);
+    Route::post('/class-posts/{classPost}', [ClassPostController::class, 'update']);
+    Route::delete('/class-posts/{classPost}', [ClassPostController::class, 'destroy']);
+    Route::get('/users', [UserManagementController::class, 'index']);
+    Route::patch('/users/{user}/role', [UserManagementController::class, 'updateRole']);
+    Route::get('/admin/analytics', [AdminAnalyticsController::class, 'index']);
 });

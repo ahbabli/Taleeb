@@ -24,7 +24,7 @@ class User extends Authenticatable
      *
      * @return array<string, string>
      */
-    protected $fillable = ['name', 'email', 'password', 'role'];
+    protected $fillable = ['name', 'email', 'password', 'role', 'managed_department', 'managed_level'];
     public function student()
     {
         return $this->hasOne(\App\Models\Student::class);

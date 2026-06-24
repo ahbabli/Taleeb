@@ -17,21 +17,35 @@ import AdminAcademicSettings from "./pages/AdminAcademicSettings";
 import AdminFAQ from "./pages/AdminFAQ";
 import StudentFAQ from "./pages/StudentFAQ";
 import AssistantChat from "./pages/AssistantChat";
+import ClassFeed from "./pages/ClassFeed";
+import ManageClassPosts from "./pages/ManageClassPosts";
+import AdminUsers from "./pages/AdminUsers";
+import AdminAnalytics from "./pages/AdminAnalytics";
 const LAST_PAGE_KEY = "taleebCurrentPage";
 
-const studentPages = ["home", "requests", "schedule", "faq", "assistant", "announcements"];
+const studentPages = [
+"home",
+"class-feed",
+"requests",
+"schedule",
+"faq",
+"assistant",
+"announcements",
+];
 const adminPages = [
+"admin-analytics",
 "admin-requests",
 "admin-schedule",
 "admin-faq",
 "admin-announcements",
 "admin-academic-settings",
+"admin-users",
 "assistant",
 "home",
 ];
 
 function getInitialPage(role) {
-const fallback = role === "admin" ? "admin-requests" : "home";
+const fallback = role === "admin" ? "admin-analytics" : "home";
 const storedPage = localStorage.getItem(LAST_PAGE_KEY);
 const allowedPages = role === "admin" ? adminPages : studentPages;
 
@@ -79,10 +93,44 @@ case "admin-academic-settings":
 return <AdminAcademicSettings />;
 case "assistant":
 return <AssistantChat title="AI Assistant" />;
+case "admin-users":
+return <AdminUsers />;
+case "admin-analytics":
+  return <AdminAnalytics />;
 case "home":
 return <StudentHome setCurrentPage={navigateToPage} />;
 default:
 return <AdminDashboard />;
+}
+}
+if (role === "student_representative") {
+switch (currentPage) {
+case "home":
+return <StudentHome setCurrentPage={navigateToPage} />;
+
+case "requests":
+return <MyRequests />;
+
+case "schedule":
+return <MySchedule />;
+
+case "class-feed":
+return <ClassFeed />;
+
+case "manage-class-posts":
+return <ManageClassPosts />;
+
+case "faq":
+return <StudentFAQ />;
+
+case "assistant":
+return <AssistantChat />;
+
+case "announcements":
+return <StudentAnnouncements />;
+
+default:
+return <StudentHome setCurrentPage={navigateToPage} />;
 }
 }
 
@@ -94,6 +142,8 @@ case "requests":
 return <MyRequests />;
 case "schedule":
 return <MySchedule />;
+case "class-feed":
+return <ClassFeed />;
 case "faq":
 return <StudentFAQ />;
 case "assistant":
@@ -112,7 +162,7 @@ return authPage === "login" ? (
     <Login onLogin={()=> {
         setIsLoggedIn(true);
         const freshUser = JSON.parse(localStorage.getItem("user") || "null");
-        navigateToPage(freshUser?.role === "admin" ? "admin-requests" : "home");
+        navigateToPage(freshUser?.role === "admin" ? "admin-analytics" : "home");
         }}
         onGoRegister={() => setAuthPage("register")}
         />
@@ -132,14 +182,12 @@ return (
     <Toaster position="top-right" />
     <Navbar currentPage={currentPage} setCurrentPage={navigateToPage} role={role} onLogout={handleLogout} />
     {currentPage !== "assistant" && (
-        <button
-            type="button"
-            onClick={() => navigateToPage("assistant")}
-            aria-label="Open AI Assistant"
-            className="fixed bottom-24 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#1557A6] text-white shadow-2xl shadow-blue-900/25 ring-1 ring-white/70 transition hover:bg-[#0B3D7A] focus:outline-none focus:ring-4 focus:ring-blue-100 sm:bottom-28 sm:right-6"
+    <button type="button" onClick={()=> navigateToPage("assistant")}
+        aria-label="Open AI Assistant"
+        className="fixed bottom-24 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#1557A6] text-white shadow-2xl shadow-blue-900/25 ring-1 ring-white/70 transition hover:bg-[#0B3D7A] focus:outline-none focus:ring-4 focus:ring-blue-100 sm:bottom-28 sm:right-6"
         >
-            <Bot size={24} />
-        </button>
+        <Bot size={24} />
+    </button>
     )}
 
     {renderPage()}
