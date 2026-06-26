@@ -7,6 +7,7 @@ use App\Helpers\NotificationHelper;
 use App\Models\Schedule;
 use App\Models\Student;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class ScheduleController extends Controller
 {
@@ -43,7 +44,7 @@ class ScheduleController extends Controller
         }
 
         $validated = $request->validate([
-            'department' => 'required|string',
+            'department' => ['required', 'string', Rule::exists('academic_sections', 'name')],
             'level' => 'required|string',
             'day' => 'required|string',
             'subject' => 'required|string',
@@ -86,7 +87,7 @@ class ScheduleController extends Controller
         }
 
         $validated = $request->validate([
-            'department' => 'required|string',
+            'department' => ['required', 'string', Rule::exists('academic_sections', 'name')],
             'level' => 'required|string',
             'day' => 'required|string',
             'subject' => 'required|string',

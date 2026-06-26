@@ -5,8 +5,10 @@ import {
   CalendarDays,
   Clock3,
   GraduationCap,
+  Plus,
   Save,
   TimerReset,
+  Trash2,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import api from "../api/axios";
@@ -89,24 +91,33 @@ function formatDate(value) {
 
 export default function AdminAcademicSettings() {
   const [form, setForm] = useState(initialForm);
+  const [sections, setSections] = useState([]);
+  const [sectionName, setSectionName] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [savingSection, setSavingSection] = useState(false);
 
   useEffect(() => {
     let isActive = true;
 
-    api
-      .get("/academic-settings")
-      .then((res) => {
-        if (res.data && isActive) {
+    Promise.all([
+      api.get("/academic-settings"),
+      api.get("/academic-sections"),
+    ])
+      .then(([settingsRes, sectionsRes]) => {
+        if (!isActive) return;
+
+        if (settingsRes.data) {
           setForm({
-            academic_year: res.data.academic_year || "",
-            semester_start_date: res.data.semester_start_date || "",
-            semester_end_date: res.data.semester_end_date || "",
-            exams_start_date: res.data.exams_start_date || "",
-            exams_end_date: res.data.exams_end_date || "",
+            academic_year: settingsRes.data.academic_year || "",
+            semester_start_date: settingsRes.data.semester_start_date || "",
+            semester_end_date: settingsRes.data.semester_end_date || "",
+            exams_start_date: settingsRes.data.exams_start_date || "",
+            exams_end_date: settingsRes.data.exams_end_date || "",
           });
         }
+
+        setSections(sectionsRes.data || []);
       })
       .catch(() => toast.error("Failed to load academic settings."))
       .finally(() => {
@@ -176,45 +187,81 @@ export default function AdminAcademicSettings() {
     }
   };
 
+  const addSection = async (e) => {
+    e.preventDefault();
+
+    const name = sectionName.trim();
+
+    if (!name) {
+      toast.error("Section name is required.");
+      return;
+    }
+
+    try {
+      setSavingSection(true);
+
+      const res = await api.post("/academic-sections", { name });
+
+      setSections((prev) => [...prev, res.data.data.name].sort((a, b) => a.localeCompare(b)));
+      setSectionName("");
+      toast.success("Section added.");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to add section.");
+    } finally {
+      setSavingSection(false);
+    }
+  };
+
+  const deleteSection = async (section) => {
+    const confirmDelete = window.confirm(`Delete ${section}?`);
+    if (!confirmDelete) return;
+
+    try {
+      const sectionsRes = await api.get("/academic-sections");
+      const matchingSection = sectionsRes.data.find((item) => item === section);
+
+      if (!matchingSection) {
+        setSections((prev) => prev.filter((item) => item !== section));
+        return;
+      }
+
+      await api.delete(`/academic-sections/${encodeURIComponent(section)}`);
+      setSections((prev) => prev.filter((item) => item !== section));
+      toast.success("Section deleted.");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to delete section.");
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-[#EAF3FF] pb-24">
-      <div className="bg-[#0B3D7A] px-4 pb-24 pt-10 sm:px-6 sm:pt-12">
-        <div className="mx-auto flex max-w-6xl flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-4">
-            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-white/10">
-              <CalendarClock className="text-white" size={34} />
-            </div>
-
-            <div>
-              <p className="font-bold text-blue-100">Admin Settings</p>
-              <h1 className="text-3xl font-extrabold text-white sm:text-4xl">
-                Academic Calendar
-              </h1>
-              <p className="mt-2 max-w-2xl text-sm leading-relaxed text-blue-100/80 sm:text-lg">
-                Set the semester and exam dates that drive the student dashboard.
-              </p>
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            form="academic-settings-form"
-            disabled={saving || loading}
-            className="flex w-full items-center justify-center gap-2 rounded-full bg-white px-6 py-3 font-bold text-[#0B3D7A] shadow-lg transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto"
-          >
-            {saving ? (
-              <span className="loading loading-spinner loading-sm"></span>
-            ) : (
-              <Save size={20} />
-            )}
-            {saving ? "Saving..." : "Save Changes"}
-          </button>
+    <div className="space-y-8">
+      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <div>
+          <h2 className="text-3xl font-extrabold tracking-tight text-slate-900">
+            Academic Calendar
+          </h2>
+          <p className="mt-1 max-w-2xl text-slate-500">
+            Set the semester and exam dates that drive the student dashboard.
+          </p>
         </div>
+
+        <button
+          type="submit"
+          form="academic-settings-form"
+          disabled={saving || loading}
+          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#1557A6] px-5 py-3 font-extrabold text-white shadow-sm transition hover:bg-[#0B3D7A] disabled:cursor-not-allowed disabled:opacity-70"
+        >
+          {saving ? (
+            <span className="loading loading-spinner loading-sm"></span>
+          ) : (
+            <Save size={20} />
+          )}
+          {saving ? "Saving..." : "Save Changes"}
+        </button>
       </div>
 
-      <div className="mx-auto -mt-14 max-w-6xl px-4 sm:px-6">
         {loading ? (
-          <div className="rounded-3xl border border-blue-100 bg-white p-20 shadow-sm">
+          <div className="rounded-2xl border border-slate-200 bg-white p-20 shadow-sm">
             <div className="flex justify-center">
               <span className="loading loading-spinner loading-lg text-[#1557A6]"></span>
             </div>
@@ -251,10 +298,10 @@ export default function AdminAcademicSettings() {
               <form
                 id="academic-settings-form"
                 onSubmit={saveSettings}
-                className="rounded-3xl border border-blue-100 bg-white shadow-sm"
+                className="rounded-2xl border border-slate-200 bg-white shadow-sm"
               >
-                <div className="border-b border-blue-100 p-5 sm:p-6">
-                  <h2 className="text-2xl font-extrabold text-[#0B3D7A]">
+                <div className="border-b border-slate-100 bg-slate-50/30 p-5 sm:p-6">
+                  <h2 className="text-2xl font-extrabold text-slate-900">
                     Calendar Details
                   </h2>
                   <p className="mt-1 text-slate-500">
@@ -308,13 +355,70 @@ export default function AdminAcademicSettings() {
                   </div>
                 </div>
               </form>
+
+              <section className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+                <div className="border-b border-slate-100 bg-slate-50/30 p-5 sm:p-6">
+                  <h2 className="text-2xl font-extrabold text-slate-900">
+                    Academic Sections
+                  </h2>
+                  <p className="mt-1 text-slate-500">
+                    Add sections such as Informatique, Mathématiques, Physique, or Chimie.
+                  </p>
+                </div>
+
+                <div className="space-y-5 p-5 sm:p-6">
+                  <form onSubmit={addSection} className="flex flex-col gap-3 sm:flex-row">
+                    <input
+                      className="input input-bordered h-12 flex-1 border-blue-100 bg-white font-semibold text-[#102033] focus:border-[#1557A6]"
+                      value={sectionName}
+                      onChange={(e) => setSectionName(e.target.value)}
+                      placeholder="New section name"
+                    />
+                    <button
+                      type="submit"
+                      disabled={savingSection}
+                      className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-[#1557A6] px-5 font-extrabold text-white shadow-sm transition hover:bg-[#0B3D7A] disabled:cursor-not-allowed disabled:opacity-70"
+                    >
+                      <Plus size={18} />
+                      Add Section
+                    </button>
+                  </form>
+
+                  <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                    {sections.map((section) => (
+                      <div
+                        key={section}
+                        className="flex items-center justify-between gap-3 rounded-2xl border border-blue-100 bg-[#F8FAFF] px-4 py-3"
+                      >
+                        <span className="min-w-0 truncate font-extrabold text-[#102033]">
+                          {section}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => deleteSection(section)}
+                          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-600 transition hover:bg-red-100"
+                          aria-label={`Delete ${section}`}
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+
+                  {sections.length === 0 && (
+                    <div className="rounded-2xl border border-dashed border-slate-200 p-8 text-center text-sm font-semibold text-slate-500">
+                      No sections yet. Add the first section above.
+                    </div>
+                  )}
+                </div>
+              </section>
             </div>
 
             <aside className="space-y-5">
-              <section className="rounded-3xl border border-blue-100 bg-white p-5 shadow-sm sm:p-6">
+              <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
                 <div className="mb-5 flex items-center justify-between gap-3">
                   <div>
-                    <h2 className="text-xl font-extrabold text-[#0B3D7A]">
+                    <h2 className="text-xl font-extrabold text-slate-900">
                       Student Card Preview
                     </h2>
                     <p className="text-sm text-slate-500">
@@ -365,13 +469,13 @@ export default function AdminAcademicSettings() {
                 </div>
               </section>
 
-              <section className="rounded-3xl border border-blue-100 bg-white p-5 shadow-sm sm:p-6">
+              <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
                 <div className="flex items-center gap-3">
                   <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-50 text-amber-600">
                     <AlertCircle size={22} />
                   </div>
                   <div>
-                    <h2 className="text-lg font-extrabold text-[#0B3D7A]">
+                    <h2 className="text-lg font-extrabold text-slate-900">
                       Date Summary
                     </h2>
                     <p className="text-sm text-slate-500">
@@ -391,7 +495,6 @@ export default function AdminAcademicSettings() {
             </aside>
           </div>
         )}
-      </div>
     </div>
   );
 }

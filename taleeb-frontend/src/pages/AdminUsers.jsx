@@ -10,9 +10,14 @@ import {
 import toast from "react-hot-toast";
 import api from "../api/axios";
 
+const semesterFilters = ["S1", "S2", "S3", "S4", "S5", "S6"];
+const sectionFilters = ["Informatique", "Mathématiques", "Physique", "Chimie"];
+
 export default function AdminUsers() {
   const [users, setUsers] = useState([]);
   const [search, setSearch] = useState("");
+  const [levelFilter, setLevelFilter] = useState("All");
+  const [sectionFilter, setSectionFilter] = useState("All");
   const [editingUser, setEditingUser] = useState(null);
   const [form, setForm] = useState({
     role: "student",
@@ -60,10 +65,15 @@ export default function AdminUsers() {
 
   const filteredUsers = useMemo(() => {
     const value = search.trim().toLowerCase();
+    const academicUsers = users.filter(
+      (user) =>
+        (sectionFilter === "All" || getUserSection(user) === sectionFilter) &&
+        (levelFilter === "All" || getUserLevel(user) === levelFilter)
+    );
 
-    if (!value) return users;
+    if (!value) return academicUsers;
 
-    return users.filter((user) => {
+    return academicUsers.filter((user) => {
       const text = [
         user.name,
         user.email,
@@ -80,7 +90,7 @@ export default function AdminUsers() {
 
       return text.includes(value);
     });
-  }, [search, users]);
+  }, [levelFilter, search, sectionFilter, users]);
 
   const openRoleModal = (user) => {
     setEditingUser(user);
@@ -140,6 +150,20 @@ export default function AdminUsers() {
           <StatCard icon={GraduationCap} label="Heads" value={stats.departmentHeads} tone="violet" />
         </section>
 
+        <SemesterCards
+          activeLevel={levelFilter}
+          activeSection={sectionFilter}
+          users={users}
+          onSelect={setLevelFilter}
+        />
+
+        <SectionCards
+          activeLevel={levelFilter}
+          activeSection={sectionFilter}
+          users={users}
+          onSelect={setSectionFilter}
+        />
+
         <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
           <div className="border-b border-slate-200 p-4">
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
@@ -148,7 +172,8 @@ export default function AdminUsers() {
                   Users
                 </h2>
                 <p className="mt-1 text-sm font-medium text-slate-500">
-                  {filteredUsers.length} shown from {users.length} total.
+                  Showing {sectionFilter === "All" ? "all sections" : sectionFilter} users in{" "}
+                  {levelFilter === "All" ? "all semesters" : levelFilter}.
                 </p>
               </div>
 
@@ -339,6 +364,109 @@ function UserRow({ user, onEdit }) {
   );
 }
 
+function SemesterCards({ activeLevel, activeSection, users, onSelect }) {
+  const cards = ["All", ...semesterFilters].map((semester) => ({
+    key: semester,
+    label: semester,
+    count: users.filter(
+      (user) =>
+        (semester === "All" || getUserLevel(user) === semester) &&
+        (activeSection === "All" || getUserSection(user) === activeSection)
+    ).length,
+  }));
+
+  return (
+    <section className="mb-4">
+      <div className="mb-3">
+        <h2 className="text-lg font-extrabold text-slate-950">Filter by Semester</h2>
+        <p className="mt-1 text-sm font-medium text-slate-500">
+          Choose all semesters or a specific semester to view matching users.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-7">
+        {cards.map((card) => {
+          const active = activeLevel === card.key;
+
+          return (
+            <button
+              key={card.key}
+              type="button"
+              onClick={() => onSelect(card.key)}
+              className={`rounded-2xl border p-4 text-left transition-all hover:-translate-y-0.5 ${
+                active
+                  ? "border-[#1557A6] bg-[#1557A6] text-white shadow-lg shadow-blue-900/15"
+                  : "border-slate-200 bg-white text-slate-700 shadow-sm hover:border-blue-100 hover:bg-blue-50"
+              }`}
+            >
+              <span className={`text-xs font-bold uppercase ${active ? "text-blue-100" : "text-slate-400"}`}>
+                {card.key === "All" ? "View" : "Semester"}
+              </span>
+              <span className="mt-2 block text-2xl font-black">{card.label}</span>
+              <span className={`mt-2 block text-sm font-bold ${active ? "text-blue-100" : "text-slate-500"}`}>
+                {card.count} user{card.count === 1 ? "" : "s"}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function SectionCards({ activeLevel, activeSection, users, onSelect }) {
+  const sections = Array.from(
+    new Set([
+      "All",
+      ...sectionFilters,
+      ...users.map((user) => getUserSection(user)).filter(Boolean),
+    ])
+  );
+
+  return (
+    <section className="mb-5">
+      <div className="mb-3">
+        <h2 className="text-lg font-extrabold text-slate-950">Filter by Section</h2>
+        <p className="mt-1 text-sm font-medium text-slate-500">
+          Choose all sections or a specific section such as Informatique.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        {sections.map((section) => {
+          const active = activeSection === section;
+          const count = users.filter(
+            (user) =>
+              (section === "All" || getUserSection(user) === section) &&
+              (activeLevel === "All" || getUserLevel(user) === activeLevel)
+          ).length;
+
+          return (
+            <button
+              key={section}
+              type="button"
+              onClick={() => onSelect(section)}
+              className={`rounded-2xl border p-4 text-left transition-all hover:-translate-y-0.5 ${
+                active
+                  ? "border-[#1557A6] bg-[#1557A6] text-white shadow-lg shadow-blue-900/15"
+                  : "border-slate-200 bg-white text-slate-700 shadow-sm hover:border-blue-100 hover:bg-blue-50"
+              }`}
+            >
+              <span className={`text-xs font-bold uppercase ${active ? "text-blue-100" : "text-slate-400"}`}>
+                {section === "All" ? "View" : "Section"}
+              </span>
+              <span className="mt-2 block text-2xl font-black">{section}</span>
+              <span className={`mt-2 block text-sm font-bold ${active ? "text-blue-100" : "text-slate-500"}`}>
+                {count} user{count === 1 ? "" : "s"}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 function StatCard({ icon: Icon, label, value, tone = "navy" }) {
   const tones = {
     navy: "bg-[#EAF3FF] text-[#1557A6]",
@@ -423,4 +551,12 @@ function formatRole(role) {
     default:
       return "Student";
   }
+}
+
+function getUserSection(user) {
+  return user.student?.department || user.managed_department || "";
+}
+
+function getUserLevel(user) {
+  return user.student?.level || user.managed_level || "";
 }

@@ -7,7 +7,8 @@ Megaphone,
 CalendarClock,
 ClipboardList,
 UsersRound,
-BarChart3
+BarChart3,
+Bot
 } from "lucide-react";
 
 export default function Navbar({ currentPage, setCurrentPage, role }) {
@@ -33,6 +34,7 @@ const adminLinks = [
 { key: "admin-faq", label: "FAQ", icon: HelpCircle },
 { key: "admin-academic-settings", label: "Settings", icon: CalendarClock },
 { key: "admin-users", label: "Users", icon: UsersRound },
+{ key: "admin-assistant-logs", label: "AI Logs", icon: Bot },
 ];
 
 const links =

@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\AssistantController;
 use App\Http\Controllers\Api\ClassPostController;
 use App\Http\Controllers\Api\UserManagementController;
 use App\Http\Controllers\Api\AdminAnalyticsController;
+use App\Http\Controllers\Api\AdminAssistantLogController;
 
 Route::get('/document-types', [DocumentTypeController::class, 'index']);
 
@@ -42,6 +43,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/announcements/{announcement}', [AnnouncementController::class, 'destroy']);
     Route::put('/announcements/{announcement}', [AnnouncementController::class, 'update']);
     Route::get('/academic-settings', [AcademicSettingController::class, 'show']);
+    Route::get('/academic-sections', [AcademicSettingController::class, 'sections']);
+    Route::post('/academic-sections', [AcademicSettingController::class, 'storeSection']);
+    Route::delete('/academic-sections/{academicSection:name}', [AcademicSettingController::class, 'destroySection']);
     Route::put('/academic-settings', [AcademicSettingController::class, 'update']);
     Route::get('/faq', [FaqController::class, 'index']);
     Route::post('/faq', [FaqController::class, 'store']);
@@ -56,4 +60,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/users', [UserManagementController::class, 'index']);
     Route::patch('/users/{user}/role', [UserManagementController::class, 'updateRole']);
     Route::get('/admin/analytics', [AdminAnalyticsController::class, 'index']);
+    Route::get('/admin/assistant-logs', [AdminAssistantLogController::class, 'index']);
+    Route::get('/admin/assistant-logs/fallback', [AdminAssistantLogController::class, 'fallbackQuestions']);
 });

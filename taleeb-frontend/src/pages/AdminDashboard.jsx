@@ -4,7 +4,6 @@ FileText,
 Clock,
 CheckCircle,
 XCircle,
-LogOut,
 Loader2,
 ClipboardList,
 AlertCircle,
@@ -17,14 +16,19 @@ ChevronRight
 } from "lucide-react";
 import api from "../api/axios";
 import toast from "react-hot-toast";
-import TaleebLogo from "../components/TaleebLogo";
+
+const semesterFilters = ["S1", "S2", "S3", "S4", "S5", "S6"];
+const sectionFilters = ["Informatique", "Mathématiques", "Physique", "Chimie"];
 
 export default function AdminDashboard() {
 const [requests, setRequests] = useState([]);
+const [requestSnapshot, setRequestSnapshot] = useState([]);
 const [loading, setLoading] = useState(true);
 const [statusFilter, setStatusFilter] = useState("all");
+const [levelFilter, setLevelFilter] = useState("S1");
+const [sectionFilter, setSectionFilter] = useState("Informatique");
+const [sectionOptions, setSectionOptions] = useState(sectionFilters);
 const [search, setSearch] = useState("");
-const [page, setPage] = useState(1);
 const [pagination, setPagination] = useState({
 currentPage: 1,
 lastPage: 1,
@@ -74,6 +78,11 @@ prev.map((req) =>
 req.id === uploadRequest.id ? res.data.data : req
 )
 );
+setRequestSnapshot((prev) =>
+prev.map((req) =>
+req.id === uploadRequest.id ? res.data.data : req
+)
+);
 
 setUploadModalOpen(false);
 setUploadRequest(null);
@@ -86,11 +95,25 @@ setUploading(false);
 }
 };
 
-const fetchRequests = useCallback(async (pageNumber = page) => {
+const fetchRequests = useCallback(async (pageNumber = 1) => {
 try {
 setLoading(true);
-setPage(pageNumber);
-const res = await api.get(`/document-requests?page=${pageNumber}`);
+
+const params = new URLSearchParams({
+page: String(pageNumber),
+level: levelFilter,
+department: sectionFilter,
+});
+
+if (statusFilter !== "all") {
+params.set("status", statusFilter);
+}
+
+if (search.trim()) {
+params.set("search", search.trim());
+}
+
+const res = await api.get(`/document-requests?${params.toString()}`);
 setRequests(res.data.data);
 setPagination({
 currentPage: res.data.current_page,
@@ -103,28 +126,104 @@ toast.error("Failed to load requests.");
 } finally {
 setLoading(false);
 }
-}, [page]);
+}, [levelFilter, search, sectionFilter, statusFilter]);
 
 useEffect(() => {
-const loadRequests = async () => {
+let isActive = true;
+
+const loadFilteredRequests = async () => {
 try {
 setLoading(true);
-const res = await api.get("/document-requests?page=1");
+
+const params = new URLSearchParams({
+page: "1",
+level: levelFilter,
+department: sectionFilter,
+});
+
+if (statusFilter !== "all") {
+params.set("status", statusFilter);
+}
+
+if (search.trim()) {
+params.set("search", search.trim());
+}
+
+const res = await api.get(`/document-requests?${params.toString()}`);
+
+if (isActive) {
 setRequests(res.data.data);
 setPagination({
 currentPage: res.data.current_page,
 lastPage: res.data.last_page,
 total: res.data.total,
 });
+}
 } catch (err) {
 console.error(err);
 toast.error("Failed to load requests.");
 } finally {
+if (isActive) {
 setLoading(false);
+}
 }
 };
 
-loadRequests();
+loadFilteredRequests();
+
+return () => {
+isActive = false;
+};
+}, [levelFilter, search, sectionFilter, statusFilter]);
+
+useEffect(() => {
+let isActive = true;
+
+const loadSections = async () => {
+try {
+const res = await api.get("/academic-sections");
+const sections = normalizeSections(res.data);
+const nextSections = sections.length ? sections : sectionFilters;
+
+if (isActive) {
+setSectionOptions(nextSections);
+
+if (!nextSections.includes(sectionFilter)) {
+setSectionFilter(nextSections[0]);
+}
+}
+} catch (err) {
+console.error(err);
+}
+};
+
+loadSections();
+
+return () => {
+isActive = false;
+};
+}, [sectionFilter]);
+
+useEffect(() => {
+let isActive = true;
+
+const loadRequestSnapshot = async () => {
+try {
+const res = await api.get("/document-requests?per_page=500");
+
+if (isActive) {
+setRequestSnapshot(res.data.data);
+}
+} catch (err) {
+console.error(err);
+}
+};
+
+loadRequestSnapshot();
+
+return () => {
+isActive = false;
+};
 }, []);
 
 const updateStatus = async (id, status) => {
@@ -135,6 +234,11 @@ admin_note: `Request marked as ${status}`,
 });
 
 setRequests((prev) =>
+prev.map((req) =>
+req.id === id ? { ...req, ...res.data.data } : req
+)
+);
+setRequestSnapshot((prev) =>
 prev.map((req) =>
 req.id === id ? { ...req, ...res.data.data } : req
 )
@@ -172,6 +276,11 @@ prev.map((req) =>
 req.id === selectedRequest.id ? { ...req, ...res.data.data } : req
 )
 );
+setRequestSnapshot((prev) =>
+prev.map((req) =>
+req.id === selectedRequest.id ? { ...req, ...res.data.data } : req
+)
+);
 
 setRejectModalOpen(false);
 setSelectedRequest(null);
@@ -182,53 +291,8 @@ toast.error(err.response?.data?.message || "Failed to reject request.");
 }
 };
 
-const handleLogout = async () => {
-try {
-await api.post("/logout");
-} catch {
-console.log("Logout failed, continuing...");
-}
-localStorage.removeItem("token");
-localStorage.removeItem("user");
-localStorage.removeItem("student");
-window.location.reload();
-};
-
-const filteredRequests = requests.filter((req) => {
-const matchesStatus = statusFilter === "all" || req.status === statusFilter;
-const matchesSearch =
-req.student?.student_code?.toLowerCase().includes(search.toLowerCase()) ||
-req.student?.department?.toLowerCase().includes(search.toLowerCase()) ||
-req.document_type?.name?.toLowerCase().includes(search.toLowerCase());
-return matchesStatus && matchesSearch;
-});
-
 return (
-<div className="min-h-screen bg-[#F8FAFC]">
-    {/* Navigation */}
-    <nav className="bg-[#0B3D7A] text-white sticky top-0 z-40 shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center h-16">
-                <div className="flex items-center gap-3">
-                    <div className="rounded-xl bg-white p-1.5 shadow-sm">
-                        <TaleebLogo markClassName="h-9 w-auto max-w-[86px]" />
-                    </div>
-                    <div className="hidden sm:block">
-                        <h1 className="text-lg font-bold leading-tight">Taleeb Admin</h1>
-                        <p className="text-[10px] text-blue-200 uppercase tracking-widest font-bold">Portal</p>
-                    </div>
-                </div>
-
-                <button onClick={handleLogout}
-                    className="group flex items-center gap-2 bg-white/5 hover:bg-red-500/20 px-4 py-2 rounded-lg text-sm font-medium transition-all border border-white/10 hover:border-red-500/30">
-                    <LogOut size={16} className="group-hover:-translate-x-0.5 transition-transform" />
-                    <span>Sign Out</span>
-                </button>
-            </div>
-        </div>
-    </nav>
-
-    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+<div className="space-y-8">
         {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
             <div>
@@ -241,14 +305,33 @@ return (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
             <StatCard label="Total Submissions" count={pagination.total} icon={<ClipboardList size={22} />}
             color="indigo" />
-            <StatCard label="Pending Review" count={requests.filter(r=> r.status === "pending").length} icon={
+            <StatCard label="Pending Review" count={requestSnapshot.filter(r=> r.status === "pending").length} icon={
                 <Clock size={22} />} color="amber" />
-                <StatCard label="In Progress" count={requests.filter(r=> r.status === "processing").length} icon={
+                <StatCard label="In Progress" count={requestSnapshot.filter(r=> r.status === "processing").length} icon={
                     <Loader2 size={22} />} color="sky" />
-                    <StatCard label="Ready for Pickup" count={requests.filter(r=> r.status === "ready").length}
+                    <StatCard label="Ready for Pickup" count={requestSnapshot.filter(r=> r.status === "ready").length}
                         icon={
                         <CheckSquare size={22} />} color="emerald" />
         </div>
+
+        <SemesterCards
+          activeLevel={levelFilter}
+          activeSection={sectionFilter}
+          items={requestSnapshot}
+          getLevel={(item) => item.student?.level}
+          getSection={(item) => item.student?.department}
+          onSelect={setLevelFilter}
+        />
+
+        <SectionCards
+          activeSection={sectionFilter}
+          activeLevel={levelFilter}
+          items={requestSnapshot}
+          sections={sectionOptions}
+          getLevel={(item) => item.student?.level}
+          getSection={(item) => item.student?.department}
+          onSelect={setSectionFilter}
+        />
 
         {/* Controls and Table Card */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-10">
@@ -309,7 +392,7 @@ return (
                     </thead>
 
                     <tbody className="divide-y divide-slate-50">
-                        {filteredRequests.map((req) => (
+                        {requests.map((req) => (
                         <tr key={req.id} className="hover:bg-blue-50/30 transition-colors group">
                             <td className="px-6 py-5">
                                 <div className="flex items-center gap-3">
@@ -386,7 +469,7 @@ return (
                     </tbody>
                 </table>
 
-                {filteredRequests.length === 0 && (
+                {requests.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-24 px-6 bg-white">
                     <div className="bg-slate-50 p-6 rounded-full mb-4">
                         <AlertCircle size={48} className="text-slate-300" />
@@ -401,8 +484,6 @@ return (
             )}
             <PaginationControls pagination={pagination} onPageChange={fetchRequests} />
         </div>
-    </main>
-
     {/* Upload Modal */}
     {uploadModalOpen && (
     <div className="fixed inset-0 z-[100] overflow-y-auto">
@@ -534,6 +615,114 @@ function StatCard({ label, count, color, icon }) {
       </div>
     </div>
   );
+}
+
+function SemesterCards({ activeLevel, activeSection, items, getLevel, getSection, onSelect }) {
+  const cards = semesterFilters.map((semester) => ({
+      key: semester,
+      label: semester,
+      count: items.filter((item) => getLevel(item) === semester && getSection(item) === activeSection).length,
+    }));
+
+  return (
+    <section className="mb-8">
+      <div className="mb-4">
+        <h3 className="text-xl font-extrabold text-slate-900">
+          Filter by Semester
+        </h3>
+        <p className="mt-1 text-sm font-medium text-slate-500">
+          Choose a semester to show matching student requests.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
+        {cards.map((card) => {
+          const active = activeLevel === card.key;
+
+          return (
+            <button
+              key={card.key}
+              type="button"
+              onClick={() => onSelect(card.key)}
+              className={`rounded-2xl border p-4 text-left transition-all hover:-translate-y-0.5 ${
+                active
+                  ? "border-[#1557A6] bg-[#1557A6] text-white shadow-lg shadow-blue-900/15"
+                  : "border-slate-200 bg-white text-slate-700 shadow-sm hover:border-blue-100 hover:bg-blue-50"
+              }`}
+            >
+              <span className={`text-xs font-bold uppercase ${active ? "text-blue-100" : "text-slate-400"}`}>
+                Semester
+              </span>
+              <span className="mt-2 block text-2xl font-black">
+                {card.label}
+              </span>
+              <span className={`mt-2 block text-sm font-bold ${active ? "text-blue-100" : "text-slate-500"}`}>
+                {card.count} request{card.count === 1 ? "" : "s"}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function SectionCards({ activeSection, activeLevel, items, sections: availableSections, getLevel, getSection, onSelect }) {
+  const sections = availableSections;
+
+  return (
+    <section className="mb-8">
+      <div className="mb-4">
+        <h3 className="text-xl font-extrabold text-slate-900">
+          Filter by Section
+        </h3>
+        <p className="mt-1 text-sm font-medium text-slate-500">
+          Pick a section such as Informatique to narrow the list.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        {sections.map((section) => {
+          const active = activeSection === section;
+          const count = items.filter((item) => getSection(item) === section && getLevel(item) === activeLevel).length;
+
+          return (
+            <button
+              key={section}
+              type="button"
+              onClick={() => onSelect(section)}
+              className={`rounded-2xl border p-4 text-left transition-all hover:-translate-y-0.5 ${
+                active
+                  ? "border-[#1557A6] bg-[#1557A6] text-white shadow-lg shadow-blue-900/15"
+                  : "border-slate-200 bg-white text-slate-700 shadow-sm hover:border-blue-100 hover:bg-blue-50"
+              }`}
+            >
+              <span className={`text-xs font-bold uppercase ${active ? "text-blue-100" : "text-slate-400"}`}>
+                Section
+              </span>
+              <span className="mt-2 block text-2xl font-black">
+                {section}
+              </span>
+              <span className={`mt-2 block text-sm font-bold ${active ? "text-blue-100" : "text-slate-500"}`}>
+                {count} request{count === 1 ? "" : "s"}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function normalizeSections(sections) {
+  return Array.from(
+    new Set(
+      sections
+        .filter(Boolean)
+        .map((section) => String(section).trim())
+        .filter(Boolean)
+    )
+  ).sort((first, second) => first.localeCompare(second));
 }
 
 function StatusBadge({ status }) {

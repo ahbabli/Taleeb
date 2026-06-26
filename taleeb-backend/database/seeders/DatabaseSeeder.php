@@ -46,6 +46,21 @@ class DatabaseSeeder extends Seeder
         );
 
         foreach ([
+            'Informatique',
+            'Mathématiques',
+            'Physique',
+            'Chimie',
+        ] as $section) {
+            DB::table('academic_sections')->updateOrInsert(
+                ['name' => $section],
+                [
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ],
+            );
+        }
+
+        foreach ([
             ['name' => 'Enrollment Certificate', 'description' => 'Proof of current university enrollment.'],
             ['name' => 'Transcript', 'description' => 'Official academic record of grades.'],
             ['name' => 'Internship Agreement', 'description' => 'Administrative agreement for internship validation.'],

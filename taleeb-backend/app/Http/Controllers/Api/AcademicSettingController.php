@@ -3,7 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\AcademicSection;
 use App\Models\AcademicSetting;
+use App\Models\Schedule;
+use App\Models\Student;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class AcademicSettingController extends Controller
@@ -13,6 +17,70 @@ class AcademicSettingController extends Controller
         return response()->json(
             AcademicSetting::latest()->first()
         );
+    }
+
+    public function sections(Request $request)
+    {
+        if ($request->user()->role !== 'admin') {
+            return response()->json([
+                'message' => 'Only admin can view academic sections.'
+            ], 403);
+        }
+
+        $sections = AcademicSection::orderBy('name')->pluck('name');
+
+        return response()->json($sections);
+    }
+
+    public function storeSection(Request $request)
+    {
+        if ($request->user()->role !== 'admin') {
+            return response()->json([
+                'message' => 'Only admin can create academic sections.'
+            ], 403);
+        }
+
+        $request->merge([
+            'name' => trim((string) $request->input('name')),
+        ]);
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:120|unique:academic_sections,name',
+        ]);
+
+        $section = AcademicSection::create([
+            'name' => trim($validated['name']),
+        ]);
+
+        return response()->json([
+            'message' => 'Academic section created successfully.',
+            'data' => $section,
+        ], 201);
+    }
+
+    public function destroySection(Request $request, AcademicSection $academicSection)
+    {
+        if ($request->user()->role !== 'admin') {
+            return response()->json([
+                'message' => 'Only admin can delete academic sections.'
+            ], 403);
+        }
+
+        $inUse = Student::where('department', $academicSection->name)->exists()
+            || Schedule::where('department', $academicSection->name)->exists()
+            || User::where('managed_department', $academicSection->name)->exists();
+
+        if ($inUse) {
+            return response()->json([
+                'message' => 'This section is already used by students, schedules, or staff scopes.'
+            ], 422);
+        }
+
+        $academicSection->delete();
+
+        return response()->json([
+            'message' => 'Academic section deleted successfully.',
+        ]);
     }
 
     public function update(Request $request)

@@ -1,35 +1,19 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   BarChart3,
-  Bell,
-  CalendarDays,
   CheckCircle,
   ClipboardList,
   Clock,
   FileText,
   HelpCircle,
   Megaphone,
-  Search,
-  Settings,
-  ShieldCheck,
   TrendingUp,
   UserCog,
   UsersRound,
   XCircle,
 } from "lucide-react";
 import toast from "react-hot-toast";
-import TaleebLogo from "../components/TaleebLogo";
 import api from "../api/axios";
-
-const sidebarItems = [
-  { label: "Overview", icon: BarChart3, active: true },
-  { label: "Requests", icon: FileText },
-  { label: "Schedule", icon: CalendarDays },
-  { label: "News", icon: Megaphone },
-  { label: "FAQ", icon: HelpCircle },
-  { label: "Users", icon: UsersRound },
-  { label: "Settings", icon: Settings },
-];
 
 export default function AdminAnalytics() {
   const [stats, setStats] = useState(null);
@@ -60,11 +44,6 @@ export default function AdminAnalytics() {
       isActive = false;
     };
   }, []);
-
-  const user = useMemo(
-    () => JSON.parse(localStorage.getItem("user") || "null"),
-    []
-  );
 
   const metrics = useMemo(() => {
     if (!stats) return [];
@@ -97,161 +76,82 @@ export default function AdminAnalytics() {
     ];
   }, [stats]);
 
-  const requestItems = stats
-    ? [
-        ["Pending", stats.pending_requests, "bg-amber-500", Clock],
-        ["Processing", stats.processing_requests, "bg-sky-500", TrendingUp],
-        ["Ready", stats.ready_documents, "bg-emerald-500", CheckCircle],
-        ["Rejected", stats.rejected_requests, "bg-red-500", XCircle],
-      ]
-    : [];
+  const requestItems = useMemo(() => {
+    if (!stats) return [];
 
-  const contentItems = stats
-    ? [
+    const statusTotals = Object.fromEntries(
+      (stats.requests_by_status || []).map((item) => [item.status, item.total])
+    );
+
+    return [
+      ["Pending", statusTotals.pending || 0, "bg-amber-500", Clock],
+      ["Processing", statusTotals.processing || 0, "bg-sky-500", TrendingUp],
+      ["Approved", statusTotals.approved || 0, "bg-[#1557A6]", CheckCircle],
+      ["Ready", statusTotals.ready || 0, "bg-emerald-500", CheckCircle],
+      ["Rejected", statusTotals.rejected || 0, "bg-red-500", XCircle],
+    ];
+  }, [stats]);
+
+  const contentItems = useMemo(
+    () =>
+      stats
+        ? [
         ["Announcements", stats.total_announcements, stats.published_announcements, Megaphone],
         ["FAQ Entries", stats.total_faq, stats.published_faq, HelpCircle],
         ["Class Posts", stats.total_class_posts, stats.published_class_posts, ClipboardList],
       ]
-    : [];
+        : [],
+    [stats]
+  );
+
+  const requestedDocuments =
+    stats?.most_requested_documents?.map((item) => [
+      item.document,
+      item.total,
+    ]) || [];
+
+  const usersByRole =
+    stats?.users_by_role?.map((item) => [
+      formatRole(item.role),
+      item.total,
+    ]) || [];
+
+  if (loading) return <DashboardSkeleton />;
+
+  if (!stats) return <EmptyState />;
 
   return (
-    <main className="min-h-screen bg-[#F4F7FB] pb-28 text-slate-900">
-      <div className="mx-auto flex min-h-screen max-w-[1480px]">
-        <aside className="hidden w-64 shrink-0 border-r border-slate-100 bg-white px-8 py-8 lg:block">
-          <div className="mb-12 flex items-center gap-3">
-            <TaleebLogo className="h-10 w-10" />
-            <span className="text-lg font-extrabold text-slate-950">Taleeb</span>
-          </div>
+    <>
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {metrics.map((metric) => (
+          <MetricCard key={metric.label} {...metric} />
+        ))}
+      </section>
 
-          <nav className="space-y-2">
-            {sidebarItems.map((item) => {
-              const Icon = item.icon;
+      <section className="mt-6 grid gap-6 xl:grid-cols-[2fr_0.62fr]">
+        <RequestsTrendCard stats={stats} items={requestItems} />
+        <ContentDonutCard items={contentItems} />
+      </section>
 
-              return (
-                <div
-                  key={item.label}
-                  className={`flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-extrabold ${
-                    item.active
-                      ? "bg-[#EAF3FF] text-[#1557A6]"
-                      : "text-slate-500"
-                  }`}
-                >
-                  <Icon size={18} />
-                  {item.label}
-                </div>
-              );
-            })}
-          </nav>
+      <section className="mt-6 grid gap-6 xl:grid-cols-[1.35fr_0.8fr_0.62fr]">
+        <StatusOverviewPanel stats={stats} items={requestItems} />
+        <RankedPanel
+          title="Users by Role"
+          icon={UserCog}
+          items={usersByRole}
+        />
+        <HighlightCard stats={stats} />
+      </section>
 
-          <div className="mt-12 rounded-3xl bg-[#EAF3FF] p-5">
-            <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-[#1557A6]">
-              <ShieldCheck size={22} />
-            </div>
-            <p className="text-sm font-extrabold text-slate-950">
-              Admin Workspace
-            </p>
-            <p className="mt-2 text-xs font-medium leading-5 text-slate-500">
-              Analytics, users, requests, and content at a glance.
-            </p>
-          </div>
-        </aside>
-
-        <section className="min-w-0 flex-1">
-          <header className="flex h-20 items-center justify-between gap-4 border-b border-slate-100 bg-white px-4 sm:px-6 lg:px-10">
-            <label className="relative hidden w-full max-w-sm sm:block">
-              <Search
-                className="pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 text-slate-400"
-                size={18}
-              />
-              <input
-                className="h-11 w-full bg-transparent pl-8 text-sm font-medium text-slate-700 outline-none placeholder:text-slate-400"
-                placeholder="Search..."
-              />
-            </label>
-
-            <div className="min-w-0">
-              <p className="text-xs font-bold uppercase text-slate-400 lg:hidden">
-                Taleeb
-              </p>
-              <h1 className="truncate text-xl font-extrabold text-slate-950 sm:text-2xl">
-                Admin Analytics
-              </h1>
-            </div>
-
-            <div className="ml-auto flex items-center gap-4">
-              <button
-                type="button"
-                className="flex h-10 w-10 items-center justify-center rounded-2xl text-slate-400 transition hover:bg-slate-100 hover:text-[#1557A6]"
-                aria-label="Notifications"
-              >
-                <Bell size={19} />
-              </button>
-              <div className="hidden items-center gap-3 sm:flex">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#EAF3FF] text-sm font-extrabold text-[#1557A6]">
-                  {getInitials(user?.name)}
-                </div>
-                <div>
-                  <p className="text-sm font-extrabold text-slate-900">
-                    {user?.name || "Admin"}
-                  </p>
-                  <p className="text-xs font-medium text-slate-400">Administrator</p>
-                </div>
-              </div>
-            </div>
-          </header>
-
-          <div className="px-4 py-6 sm:px-6 lg:px-10">
-            {loading ? (
-              <DashboardSkeleton />
-            ) : stats ? (
-              <>
-                <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                  {metrics.map((metric) => (
-                    <MetricCard key={metric.label} {...metric} />
-                  ))}
-                </section>
-
-                <section className="mt-6 grid gap-6 xl:grid-cols-[2fr_0.62fr]">
-                  <RequestsTrendCard stats={stats} items={requestItems} />
-                  <ContentDonutCard items={contentItems} />
-                </section>
-
-                <section className="mt-6 grid gap-6 xl:grid-cols-[1.35fr_0.8fr_0.62fr]">
-                  <RequestsLineCard stats={stats} />
-                  <RankedPanel
-                    title="Users by Role"
-                    icon={UserCog}
-                    items={
-                      stats.users_by_role?.map((item) => [
-                        formatRole(item.role),
-                        item.total,
-                      ]) || []
-                    }
-                  />
-                  <HighlightCard stats={stats} />
-                </section>
-
-                <section className="mt-6 grid gap-6 xl:grid-cols-[1fr_1fr]">
-                  <RankedPanel
-                    title="Most Requested Documents"
-                    icon={FileText}
-                    items={
-                      stats.most_requested_documents?.map((item) => [
-                        item.document,
-                        item.total,
-                      ]) || []
-                    }
-                  />
-                  <ContentListPanel items={contentItems} />
-                </section>
-              </>
-            ) : (
-              <EmptyState />
-            )}
-          </div>
-        </section>
-      </div>
-    </main>
+      <section className="mt-6 grid gap-6 xl:grid-cols-[1fr_1fr]">
+        <RankedPanel
+          title="Most Requested Documents"
+          icon={FileText}
+          items={requestedDocuments}
+        />
+        <ContentListPanel items={contentItems} />
+      </section>
+    </>
   );
 }
 
@@ -276,31 +176,33 @@ function MetricCard({ label, value, icon: Icon, tone }) {
 function RequestsTrendCard({ stats, items }) {
   const max = Math.max(...items.map((item) => item[1]), 1);
   const readyPercent = getPercent(stats.ready_documents, stats.total_requests);
-  const pendingPercent = getPercent(stats.pending_requests, stats.total_requests);
+  const notReadyPercent = Math.max(0, 100 - readyPercent);
 
   return (
     <section className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm shadow-slate-200/60">
-      <PanelHeader title="Requests Status Trend" action="Show by status" />
+      <PanelHeader title="Requests by Status" action={`${formatNumber(stats.total_requests)} total`} />
 
       <div className="grid gap-8 p-6 lg:grid-cols-[1fr_230px]">
         <div className="flex min-h-56 items-end gap-5 border-b border-slate-200 bg-[linear-gradient(to_bottom,transparent_0,transparent_31%,#e5e7eb_32%,transparent_33%,transparent_64%,#e5e7eb_65%,transparent_66%)] px-2 pb-0 pt-8">
           {items.map(([label, value, color]) => {
             const height = Math.max(16, Math.round((value / max) * 150));
-            const totalHeight = Math.max(22, Math.round(((value + max * 0.45) / (max * 1.45)) * 150));
+            const percent = getPercent(value, stats.total_requests);
 
             return (
               <div key={label} className="flex flex-1 flex-col items-center gap-3">
-                <div className="flex h-40 items-end gap-2">
+                <div className="flex h-40 items-end">
                   <div
-                    className="w-3 rounded-full bg-emerald-400"
-                    style={{ height: `${Math.max(12, totalHeight - height / 3)}px` }}
-                  />
-                  <div
-                    className={`w-3 rounded-full ${color}`}
+                    className={`w-5 rounded-full ${color}`}
                     style={{ height: `${height}px` }}
+                    title={`${label}: ${formatNumber(value)} (${percent}%)`}
                   />
                 </div>
-                <span className="text-xs font-bold text-slate-400">{label}</span>
+                <div className="text-center">
+                  <span className="block text-xs font-bold text-slate-400">{label}</span>
+                  <span className="block text-[11px] font-extrabold text-slate-700">
+                    {percent}%
+                  </span>
+                </div>
               </div>
             );
           })}
@@ -310,7 +212,7 @@ function RequestsTrendCard({ stats, items }) {
           <DonutChart
             value={readyPercent}
             primary="#1557A6"
-            secondary="#34d399"
+            secondary="#e5e7eb"
             center={<UsersRound size={24} />}
           />
           <div className="flex flex-wrap justify-center gap-4 text-sm font-bold">
@@ -319,8 +221,8 @@ function RequestsTrendCard({ stats, items }) {
               Ready {readyPercent}%
             </span>
             <span className="inline-flex items-center gap-2 text-slate-500">
-              <span className="h-2 w-2 rounded-full bg-emerald-400" />
-              Pending {pendingPercent}%
+              <span className="h-2 w-2 rounded-full bg-slate-200" />
+              Not ready {notReadyPercent}%
             </span>
           </div>
         </div>
@@ -360,72 +262,66 @@ function ContentDonutCard({ items }) {
   );
 }
 
-function RequestsLineCard({ stats }) {
-  const points = [
-    stats.pending_requests,
-    stats.processing_requests,
-    stats.ready_documents,
-    stats.rejected_requests,
-    stats.total_requests,
-  ];
-  const max = Math.max(...points, 1);
-  const coords = points.map((point, index) => {
-    const x = 10 + index * 22;
-    const y = 78 - (point / max) * 58;
-    return `${x},${y}`;
-  });
+function StatusOverviewPanel({ stats, items }) {
+  const activeRequests = stats.total_requests - stats.ready_documents - stats.rejected_requests;
+  const completionPercent = getPercent(stats.ready_documents, stats.total_requests);
 
   return (
     <section className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm shadow-slate-200/60">
-      <PanelHeader title="Request Flow" action="Today" />
-      <div className="p-6">
-        <svg viewBox="0 0 100 88" className="h-44 w-full overflow-visible">
-          {[20, 40, 60, 80].map((y) => (
-            <line
-              key={y}
-              x1="8"
-              x2="98"
-              y1={y}
-              y2={y}
-              stroke="#e5e7eb"
-              strokeDasharray="3 4"
-              strokeWidth="0.7"
-            />
+      <PanelHeader title="Request Composition" action={`${completionPercent}% complete`} />
+      <div className="space-y-5 p-6">
+        <div className="grid grid-cols-3 gap-3">
+          <MiniStat label="Active" value={Math.max(0, activeRequests)} />
+          <MiniStat label="Ready" value={stats.ready_documents} />
+          <MiniStat label="Rejected" value={stats.rejected_requests} />
+        </div>
+
+        <div className="overflow-hidden rounded-full bg-slate-100">
+          <div className="flex h-4">
+            {items.map(([label, value, color]) => {
+              const percent = getPercent(value, stats.total_requests);
+              if (percent === 0) return null;
+
+              return (
+                <div
+                  key={label}
+                  className={color}
+                  style={{ width: `${percent}%` }}
+                  title={`${label}: ${formatNumber(value)} (${percent}%)`}
+                />
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-2">
+          {items.map(([label, value, color]) => (
+            <div key={label} className="flex items-center justify-between gap-3 rounded-xl bg-slate-50 px-3 py-2">
+              <span className="flex items-center gap-2 text-sm font-bold text-slate-600">
+                <span className={`h-2.5 w-2.5 rounded-full ${color}`} />
+                {label}
+              </span>
+              <span className="text-sm font-extrabold text-slate-950">
+                {formatNumber(value)}
+              </span>
+            </div>
           ))}
-          <polyline
-            points={coords.join(" ")}
-            fill="none"
-            stroke="#1557A6"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2.5"
-          />
-          {coords.map((coord, index) => {
-            const [x, y] = coord.split(",");
-
-            return (
-              <circle
-                key={coord}
-                cx={x}
-                cy={y}
-                r={index === 2 ? "2.7" : "2"}
-                fill={index === 2 ? "#34d399" : "#1557A6"}
-                stroke="white"
-                strokeWidth="1.5"
-              />
-            );
-          })}
-        </svg>
-
-        <div className="grid grid-cols-5 gap-2 text-center text-xs font-bold text-slate-400">
-          <span>Pending</span>
-          <span>Processing</span>
-          <span>Ready</span>
-          <span>Rejected</span>
-          <span>Total</span>
         </div>
       </div>
     </section>
+  );
+}
+
+function MiniStat({ label, value }) {
+  return (
+    <div className="rounded-2xl bg-slate-50 p-3 text-center">
+      <p className="text-xl font-extrabold text-slate-950">
+        {formatNumber(value)}
+      </p>
+      <p className="mt-1 text-xs font-bold uppercase text-slate-400">
+        {label}
+      </p>
+    </div>
   );
 }
 
@@ -467,7 +363,7 @@ function RankedPanel({ title, icon: Icon, items }) {
           })
         ) : (
           <p className="rounded-xl bg-slate-50 p-4 text-sm font-medium text-slate-500">
-            No data available.
+            No matching data.
           </p>
         )}
       </div>
@@ -476,6 +372,9 @@ function RankedPanel({ title, icon: Icon, items }) {
 }
 
 function HighlightCard({ stats }) {
+  const studentShare = getPercent(stats.total_students, stats.total_users);
+  const staffUsers = Math.max(0, stats.total_users - stats.total_students);
+
   return (
     <section className="relative overflow-hidden rounded-2xl bg-[#1557A6] p-6 text-white shadow-sm shadow-blue-900/20">
       <div className="absolute inset-y-0 right-0 w-28 bg-[#0B3D7A]" />
@@ -487,24 +386,28 @@ function HighlightCard({ stats }) {
           Students registered
         </p>
 
-        <svg viewBox="0 0 220 90" className="mt-8 h-28 w-full">
-          <path
-            d="M2 52 C18 22, 26 86, 42 32 C55 -10, 62 84, 82 52 C100 24, 110 54, 128 70 C149 88, 164 42, 178 61 C190 80, 196 24, 214 48"
-            fill="none"
-            stroke="rgba(255,255,255,.42)"
-            strokeWidth="4"
-            strokeLinecap="round"
-          />
-          <circle cx="178" cy="61" r="6" fill="white" opacity=".85" />
-          <text x="166" y="30" fill="white" fontSize="14" fontWeight="800">
-            {formatNumber(stats.total_users)}
-          </text>
-        </svg>
+        <div className="mt-8">
+          <div className="mb-2 flex items-center justify-between text-xs font-bold text-blue-100">
+            <span>Student share</span>
+            <span>{studentShare}%</span>
+          </div>
+          <div className="h-3 overflow-hidden rounded-full bg-white/20">
+            <div
+              className="h-full rounded-full bg-white"
+              style={{ width: `${studentShare}%` }}
+            />
+          </div>
+        </div>
 
-        <div className="mt-2 flex justify-between text-xs font-bold text-blue-100">
-          <span>Users</span>
-          <span>Students</span>
-          <span>Content</span>
+        <div className="mt-6 grid grid-cols-2 gap-3">
+          <div className="rounded-2xl bg-white/10 p-3">
+            <p className="text-2xl font-extrabold">{formatNumber(stats.total_users)}</p>
+            <p className="mt-1 text-xs font-bold text-blue-100">Total users</p>
+          </div>
+          <div className="rounded-2xl bg-white/10 p-3">
+            <p className="text-2xl font-extrabold">{formatNumber(staffUsers)}</p>
+            <p className="mt-1 text-xs font-bold text-blue-100">Staff/admins</p>
+          </div>
         </div>
       </div>
     </section>
@@ -517,31 +420,37 @@ function ContentListPanel({ items }) {
       <PanelHeader title="Content by Type" />
 
       <div className="space-y-4 p-6">
-        {items.map(([label, total, published, Icon]) => {
-          const percent = getPercent(published, total);
+        {items.length > 0 ? (
+          items.map(([label, total, published, Icon]) => {
+            const percent = getPercent(published, total);
 
-          return (
-            <div key={label} className="rounded-2xl bg-slate-50 p-4">
-              <div className="mb-3 flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-[#1557A6]">
-                    <Icon size={18} />
+            return (
+              <div key={label} className="rounded-2xl bg-slate-50 p-4">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-[#1557A6]">
+                      <Icon size={18} />
+                    </span>
+                    <span className="font-extrabold text-slate-800">{label}</span>
+                  </div>
+                  <span className="text-sm font-bold text-slate-500">
+                    {published}/{total}
                   </span>
-                  <span className="font-extrabold text-slate-800">{label}</span>
                 </div>
-                <span className="text-sm font-bold text-slate-500">
-                  {published}/{total}
-                </span>
+                <div className="h-2 overflow-hidden rounded-full bg-white">
+                  <div
+                    className="h-full rounded-full bg-[#1557A6]"
+                    style={{ width: `${percent}%` }}
+                  />
+                </div>
               </div>
-              <div className="h-2 overflow-hidden rounded-full bg-white">
-                <div
-                  className="h-full rounded-full bg-[#1557A6]"
-                  style={{ width: `${percent}%` }}
-                />
-              </div>
-            </div>
-          );
-        })}
+            );
+          })
+        ) : (
+          <p className="rounded-xl bg-slate-50 p-4 text-sm font-medium text-slate-500">
+            No matching content.
+          </p>
+        )}
       </div>
     </section>
   );
@@ -637,16 +546,4 @@ function formatRole(role) {
     default:
       return "Student";
   }
-}
-
-function getInitials(name) {
-  if (!name) return "A";
-
-  return name
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join("")
-    .toUpperCase();
 }

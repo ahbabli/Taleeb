@@ -17,9 +17,43 @@ class DocumentRequestController extends Controller
 
         if ($user->role !== 'admin') {
             $query->where('student_id', $user->student->id);
+        } else {
+            $query
+                ->when($request->filled('status') && $request->status !== 'all', function ($q) use ($request) {
+                    $q->where('status', $request->status);
+                })
+                ->when($request->filled('level'), function ($q) use ($request) {
+                    $q->whereHas('student', function ($studentQuery) use ($request) {
+                        $studentQuery->where('level', $request->level);
+                    });
+                })
+                ->when($request->filled('department'), function ($q) use ($request) {
+                    $q->whereHas('student', function ($studentQuery) use ($request) {
+                        $studentQuery->where('department', $request->department);
+                    });
+                })
+                ->when($request->filled('search'), function ($q) use ($request) {
+                    $search = $request->search;
+
+                    $q->where(function ($searchQuery) use ($search) {
+                        $searchQuery
+                            ->where('status', 'like', "%{$search}%")
+                            ->orWhereHas('student', function ($studentQuery) use ($search) {
+                                $studentQuery
+                                    ->where('student_code', 'like', "%{$search}%")
+                                    ->orWhere('department', 'like', "%{$search}%")
+                                    ->orWhere('level', 'like', "%{$search}%");
+                            })
+                            ->orWhereHas('documentType', function ($documentTypeQuery) use ($search) {
+                                $documentTypeQuery->where('name', 'like', "%{$search}%");
+                            });
+                    });
+                });
         }
 
-        return response()->json($query->paginate(10));
+        $perPage = min(max((int) $request->query('per_page', 10), 1), 500);
+
+        return response()->json($query->paginate($perPage));
     }
 
     public function store(Request $request)
@@ -64,7 +98,7 @@ class DocumentRequestController extends Controller
         }
         return response()->json([
             'message' => 'Request status updated successfully',
-            'data' => $documentRequest,
+            'data' => $documentRequest->load(['student', 'documentType']),
         ]);
     }
 

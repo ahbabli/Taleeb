@@ -3,6 +3,7 @@ import { Toaster } from "react-hot-toast";
 import { Bot } from "lucide-react";
 import StudentHome from "./pages/StudentHome";
 import Navbar from "./components/Navbar";
+import AdminShell from "./components/AdminShell";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 
@@ -21,6 +22,7 @@ import ClassFeed from "./pages/ClassFeed";
 import ManageClassPosts from "./pages/ManageClassPosts";
 import AdminUsers from "./pages/AdminUsers";
 import AdminAnalytics from "./pages/AdminAnalytics";
+import AdminAssistantLogs from "./pages/AdminAssistantLogs";
 const LAST_PAGE_KEY = "taleebCurrentPage";
 
 const studentPages = [
@@ -40,6 +42,7 @@ const adminPages = [
 "admin-announcements",
 "admin-academic-settings",
 "admin-users",
+"admin-assistant-logs",
 "assistant",
 "home",
 ];
@@ -92,7 +95,9 @@ return <AdminFAQ />;
 case "admin-academic-settings":
 return <AdminAcademicSettings />;
 case "assistant":
-return <AssistantChat title="AI Assistant" />;
+return <AssistantChat setCurrentPage={navigateToPage}  title="AI Assistant" />;
+case "admin-assistant-logs":
+  return <AdminAssistantLogs />;
 case "admin-users":
 return <AdminUsers />;
 case "admin-analytics":
@@ -124,7 +129,7 @@ case "faq":
 return <StudentFAQ />;
 
 case "assistant":
-return <AssistantChat />;
+return <AssistantChat setCurrentPage={navigateToPage} />;
 
 case "announcements":
 return <StudentAnnouncements />;
@@ -180,7 +185,9 @@ return authPage === "login" ? (
 return (
 <>
     <Toaster position="top-right" />
+    {role !== "admin" && (
     <Navbar currentPage={currentPage} setCurrentPage={navigateToPage} role={role} onLogout={handleLogout} />
+    )}
     {currentPage !== "assistant" && (
     <button type="button" onClick={()=> navigateToPage("assistant")}
         aria-label="Open AI Assistant"
@@ -190,7 +197,13 @@ return (
     </button>
     )}
 
-    {renderPage()}
+    {role === "admin" ? (
+    <AdminShell currentPage={currentPage} setCurrentPage={navigateToPage}>
+        {renderPage()}
+    </AdminShell>
+    ) : (
+    renderPage()
+    )}
 </>
 );
 }

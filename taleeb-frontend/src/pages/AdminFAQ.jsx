@@ -218,45 +218,36 @@ export default function AdminFAQ() {
   };
 
   return (
-    <div className="min-h-screen bg-[#EAF3FF] pb-28">
-      <header className="bg-[#0B3D7A] px-4 pb-24 pt-8 sm:px-6 sm:pt-12 sm:pb-28">
-        <div className="mx-auto flex max-w-6xl flex-col gap-6 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-center gap-4">
-            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white/10 sm:h-16 sm:w-16">
-              <HelpCircle className="text-white" size={34} />
-            </div>
-
-            <div className="min-w-0">
-              <h1 className="text-3xl font-extrabold leading-tight text-white sm:text-4xl">
-                FAQ Management
-              </h1>
-              <p className="mt-2 text-sm leading-relaxed text-blue-100/80 sm:text-lg">
-                Create and manage student help answers.
-              </p>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={openCreateModal}
-            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-white px-5 py-3 font-extrabold text-[#0B3D7A] shadow-lg transition hover:bg-blue-50 sm:rounded-full sm:px-6"
-          >
-            <PlusCircle size={20} />
-            New FAQ
-          </button>
+    <div className="space-y-8">
+      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <div>
+          <h2 className="text-3xl font-extrabold tracking-tight text-slate-900">
+            FAQ Management
+          </h2>
+          <p className="mt-1 text-slate-500">
+            Create, search, publish, and manage student help answers.
+          </p>
         </div>
-      </header>
 
-      <main className="mx-auto max-w-6xl px-4 sm:px-6">
-        <section className="-mt-14 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <button
+          type="button"
+          onClick={openCreateModal}
+          className="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#1557A6] px-5 py-3 font-extrabold text-white shadow-sm transition hover:bg-[#0B3D7A]"
+        >
+          <PlusCircle size={20} />
+          New FAQ
+        </button>
+      </div>
+
+        <section className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           <StatCard label="Total" value={stats.total} />
           <StatCard label="Published" value={stats.published} tone="green" />
           <StatCard label="Hidden" value={stats.hidden} tone="slate" />
           <StatCard label="Categories" value={stats.categories} tone="blue" />
         </section>
 
-        <section className="mt-5 overflow-hidden rounded-[1.5rem] border border-blue-100 bg-white shadow-sm sm:mt-6 sm:rounded-3xl">
-          <div className="border-b border-blue-100 p-4 sm:p-6">
+        <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div className="border-b border-slate-100 bg-slate-50/30 p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div>
                 <h2 className="text-xl font-extrabold text-[#0B3D7A] sm:text-2xl">
@@ -291,7 +282,7 @@ export default function AdminFAQ() {
                       className={`rounded-full px-4 py-2 text-sm font-extrabold transition ${
                         activeFilter === filter.key
                           ? "bg-[#1557A6] text-white shadow-sm"
-                          : "bg-[#F8FAFF] text-slate-500 hover:bg-blue-50 hover:text-[#1557A6]"
+                          : "bg-white text-slate-500 ring-1 ring-slate-200 hover:bg-blue-50 hover:text-[#1557A6]"
                       }`}
                     >
                       {filter.label}
@@ -326,7 +317,7 @@ export default function AdminFAQ() {
               <span className="loading loading-spinner loading-lg text-[#1557A6]"></span>
             </div>
           ) : filteredFAQ.length > 0 ? (
-            <div className="divide-y divide-blue-50">
+            <div className="divide-y divide-slate-100">
               {filteredFAQ.map((item) => (
                 <FAQRow
                   key={item.id}
@@ -341,8 +332,6 @@ export default function AdminFAQ() {
             <EmptyState hasSearch={Boolean(search || activeFilter !== "all" || activeCategory !== "all")} />
           )}
         </section>
-      </main>
-
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 px-4 py-6 backdrop-blur-sm">
           <div className="w-full max-w-2xl overflow-hidden rounded-[1.5rem] border border-blue-100 bg-white shadow-2xl sm:rounded-3xl">
